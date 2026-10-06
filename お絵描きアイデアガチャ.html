@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5f0">
+<title>お絵描きアイデアガチャ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f7f5f0;color:#292929;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+main{max-width:560px;margin:auto;padding:18px 14px 32px}
+h1{font-size:24px;margin:6px 0 4px}
+.sub{color:#777;font-size:13px;margin-bottom:16px}
+.card{background:white;border:1px solid #e6e2da;border-radius:16px;padding:14px;margin:9px 0;box-shadow:0 2px 8px #00000008}
+.row{display:flex;align-items:center;gap:10px}
+.icon{font-size:22px;width:30px}
+.label{font-weight:700;font-size:13px;color:#777}
+.value{font-size:17px;line-height:1.5;margin-top:3px}
+button{border:0;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{width:100%;background:#292929;color:white;font-size:17px;margin:10px 0}
+.secondary{background:#eeeae2;color:#333}
+.actions{display:flex;gap:8px;margin-top:14px}
+.actions button{flex:1}
+.status{font-size:12px;color:#777;text-align:center;min-height:18px;margin:5px}
+.saved{margin-top:20px}
+.saved h2{font-size:16px}
+.small{font-size:12px;color:#888}
+</style>
+</head>
+<body>
+<main>
+<h1>🎨 お絵描きアイデアガチャ</h1>
+<div class="sub">7つの要素を、ひとつの絵として成立しやすいように組み合わせます。</div>
+<section id="result"></section>
+<button class="primary" onclick="generate()">🎲 アイデアを生成</button>
+<div class="actions">
+<button class="secondary" onclick="saveIdea()">♡ 保存</button>
+<button class="secondary" onclick="copyIdea()">⧉ コピー</button>
+</div>
+<div id="status" class="status"></div>
+<section class="saved">
+<h2>保存したお題</h2>
+<div id="savedList" class="small">まだありません。</div>
+</section>
+</main>
+<script>
+const data={
+場所:[
+["海辺",["春","夏","秋"],["昼","夕方","夜"],["水着","私服","薄手の上着"],["海を眺める","散歩する","夕日を見る"],["水平線を大きく入れる","後ろ姿","波打ち際のローアングル"]],
+["学校の屋上",["春","夏","秋"],["昼","放課後","夕方"],["制服","制服＋カーディガン","私服"],["友人と話す","一人で空を眺める","風に当たる"],["空を大きく入れる","フェンス越し","少し離れた遠景"]],
+["雨上がりの商店街",["春","夏","秋","冬"],["夕方","夜","放課後"],["制服","私服＋薄手の上着","コート"],["誰かを待つ","店を眺める","傘を閉じる"],["水たまりの反射","道路の反対側から","看板を背景に"]],
+["古い神社",["春","夏","秋","冬"],["朝","夕方","夜"],["制服","和装","普段着＋羽織"],["参拝する","境内を歩く","何かを探す"],["鳥居越し","階段の下から","木々を前景に"]],
+["駅のホーム",["春","夏","秋","冬"],["朝","夕方","夜"],["制服","通勤服","コート＋マフラー"],["電車を待つ","誰かを見送る","偶然再会する"],["ホームを奥行きに使う","電車越し","横顔のアップ"]]
+],
+時間:["朝","昼","放課後","夕方","夜","深夜"],
+季節:["春","夏","秋","冬"],
+衣装:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","コート＋マフラー","和装","スポーティーな服"],
+表情:["楽しそう","少し寂しげ","照れた笑顔","驚いている","眠そう","真剣な表情","穏やかな笑顔","不安そう"],
+シチュエーション:["誰かを待っている","友人と話している","一人で物思いにふけっている","何かを探している","偶然誰かと出会う","帰るところ","景色を眺めている"],
+構図:["顔を大きく見せる寄りの構図","全身を入れた縦構図","後ろ姿","少し見上げるローアングル","少し見下ろすハイアングル","背景を大きく入れた遠景","手前に小物を置いた前景構図"]
+};
+const icons={場所:"📍",時間:"🕐",季節:"🍂",衣装:"👗",表情:"🙂",シチュエーション:"🎬",構図:"📐"};
+const keys=["場所","時間","季節","衣装","表情","シチュエーション","構図"];
+let current=null;
+
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function makeIdea(){
+ const p=pick(data.場所);
+ const season=pick(p[1]), time=pick(p[2]), outfit=pick(p[3]);
+ const situation=pick(p[4]), composition=pick(p[5]);
+ const mood=pick(data.表情);
+ return {場所:p[0],時間:time,季節:season,衣装:outfit,表情:mood,シチュエーション:situation,構図:composition};
+}
+function generate(){
+ current=makeIdea(); render();
+}
+function render(){
+ result.innerHTML=keys.map(k=>`<div class="card"><div class="row"><div class="icon">${icons[k]}</div><div><div class="label">${k}</div><div class="value">${current[k]}</div></div></div></div>`).join("");
+ status.textContent="";
+}
+function text(){
+ return keys.map(k=>`${icons[k]} ${k}：${current[k]}`).join("\n");
+}
+function copyIdea(){
+ if(!current)return;
+ navigator.clipboard?.writeText(text()).then(()=>status.textContent="コピーしました！").catch(()=>status.textContent="コピーに失敗しました。");
+}
+function saveIdea(){
+ if(!current)return;
+ const arr=JSON.parse(localStorage.getItem("drawingIdeas")||"[]");
+ arr.unshift(current); localStorage.setItem("drawingIdeas",JSON.stringify(arr.slice(0,20)));
+ renderSaved(); status.textContent="保存しました！";
+}
+function renderSaved(){
+ const arr=JSON.parse(localStorage.getItem("drawingIdeas")||"[]");
+ savedList.innerHTML=arr.length?arr.map((x,i)=>`<div class="card"><div class="value">${x.場所}・${x.季節}・${x.時間}</div><div class="small">${x.衣装}／${x.シチュエーション}／${x.構図}</div></div>`).join(""):"まだありません。";
+}
+generate(); renderSaved();
+</script>
+</body>
+</html>
