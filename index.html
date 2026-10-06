@@ -52,12 +52,43 @@ const I={場所:"📍",時間:"🕐",季節:"🍂",衣装:"👗",表情:"🙂",�
 const K=["場所","時間","季節","衣装","表情","シチュエーション","構図","注目部位","ポーズ"];
 let current=null,locks=JSON.parse(localStorage.ideaLocks||"{}"),enabled=JSON.parse(localStorage.ideaEnabled||'{"場所":true,"時間":true,"季節":true,"衣装":true,"表情":true,"シチュエーション":true,"構図":true,"注目部位":true,"ポーズ":true}'),custom=JSON.parse(localStorage.ideaCustom||"[]");
 
-const p=()=>D.場所[Math.floor(Math.random()*D.場所.length)], pick=a=>a[Math.floor(Math.random()*a.length)], esc=s=>String(s).replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
+const p=()=>D.場所[Math.floor(Math.random()*D.場所.length)], pick=a=>a[Math.floor(Math.random()*a.length)], esc=s=>String(s).replace(/[&<>"]+/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[x]));
+const SEASON_CLOTHES={春:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","和装","スポーティーな服"],夏:["制服","私服","ワンピース","パーカー＋スカート","和装","スポーティーな服","水着"],秋:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","コート＋マフラー","和装","スポーティーな服"],冬:["制服＋カーディガン","私服","ワンピース","コート＋マフラー","和装"]};
+const CUSTOM_WORDS=()=>custom.flatMap(x=>[x.word,...x.related].filter(Boolean));
+function customCandidates(k,season){return custom.filter(x=>x.category==k||x.category==="テーマ"||x.category==="小物").flatMap(x=>[x.word,...x.related]).filter(Boolean)}
+function seasonalClothes(season){return SEASON_CLOTHES[season]||D.衣装}
 function compatible(k,v,x){let i={季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k];return !i||x[i].includes(v)}
 function make(seed={}){
- let x=p(),o={}; if(seed.場所){let q=D.場所.find(z=>z[0]==seed.場所);if(q)x=q}
- K.forEach(k=>{if(!enabled[k])return;if(seed[k]!=null)o[k]=seed[k];else if(locks[k]&&current?.[k]!=null&&compatible(k,current[k],x))o[k]=current[k];else if(k=="場所")o[k]=x[0];else if(k=="注目部位")o[k]=pick(Object.keys(F).filter(z=>z!="なし"));else if(k=="ポーズ")o[k]=pick(F[o.注目部位||current?.注目部位||"なし"]);else {let i={季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k];o[k]=pick(i?x[i]:D[k])}});
- if(o.場所){x=D.場所.find(z=>z[0]==o.場所)||x;["季節","時間","衣装","シチュエーション","構図"].forEach(k=>{if(enabled[k]&&!compatible(k,o[k],x))o[k]=pick(x[{季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k]])})}return o}
+ let x=p(),o={};
+ if(seed.場所){let q=D.場所.find(z=>z[0]==seed.場所);if(q)x=q}
+ const season=seed.季節||((locks.季節&&current?.季節)?current.季節:null)||pick(x[1]);
+ if(enabled.季節)o.季節=season;
+ K.forEach(k=>{
+   if(!enabled[k])return;
+   if(seed[k]!=null){o[k]=seed[k];return}
+   if(locks[k]&&current?.[k]!=null&&compatible(k,current[k],x)){o[k]=current[k];return}
+   if(k=="場所")o[k]=x[0];
+   else if(k=="注目部位")o[k]=pick(Object.keys(F).filter(z=>z!="なし"));
+   else if(k=="ポーズ")o[k]=pick(F[o.注目部位||current?.注目部位||"なし"]||F.なし);
+   else if(k=="衣装")o[k]=pick(seasonalClothes(o.季節||season));
+   else {
+     let i={季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k];
+     o[k]=pick(i?x[i]:D[k]);
+   }
+ });
+ if(o.場所){
+   x=D.場所.find(z=>z[0]==o.場所)||x;
+   ["時間","シチュエーション","構図"].forEach(k=>{if(enabled[k]&&!compatible(k,o[k],x))o[k]=pick(x[{時間:2,シチュエーション:4,構図:5}[k]])});
+   if(enabled.衣装 && (!o.衣装 || !seasonalClothes(o.季節||season).includes(o.衣装)))o.衣装=pick(seasonalClothes(o.季節||season));
+ }
+ // マイデータを生成候補へ。登録語は「そのまま生成結果」に入り、関連語も小物・テーマとして活用。
+ const cw=CUSTOM_WORDS();
+ if(cw.length){
+   if(enabled.シチュエーション && custom.some(x=>x.category==="シチュエーション") && Math.random()<.35)o.シチュエーション=pick(customCandidates("シチュエーション"));
+   if(Math.random()<.25)o.マイデータ=pick(cw);
+ }
+ return o;
+}
 function render(){result.innerHTML=Object.keys(current||{}).map(k=>`<div class="card"><div class="row"><div class="icon">${I[k]||"✨"}</div><div style="flex:1"><div class="label">${k}</div><div class="value">${esc(current[k])}</div></div>${K.includes(k)?`<button class="lock ${locks[k]?"on":""}" onclick="lock('${k}')">${locks[k]?"🔒":"🔓"}</button>`:""}</div></div>`).join("")}
 function generate(){current=make();render();sync();status.textContent="新しいアイデアを生成しました！"}
 function lock(k){locks[k]=!locks[k];localStorage.ideaLocks=JSON.stringify(locks);render()}
@@ -66,19 +97,54 @@ function copy(){navigator.clipboard?.writeText(Object.keys(current).map(k=>(I[k]
 function save(){let a=JSON.parse(localStorage.drawingIdeas||"[]");a.unshift(current);localStorage.drawingIdeas=JSON.stringify(a.slice(0,30));saved()}
 function saved(){let a=JSON.parse(localStorage.drawingIdeas||"[]");document.getElementById("saved").innerHTML=a.length?a.map((x,i)=>`<div class="card"><b>${esc(x.場所||"")}</b>・${esc(x.季節||"")}・${esc(x.時間||"")}<div class="small">${esc(x.衣装||"")}／${esc(x.シチュエーション||"")}</div><button class="danger" onclick="del(${i})">削除</button></div>`).join(""):"まだありません。"}
 function del(i){let a=JSON.parse(localStorage.drawingIdeas||"[]");a.splice(i,1);localStorage.drawingIdeas=JSON.stringify(a);saved()}
-function setup(){checks.innerHTML=K.map(k=>`<label class="check"><input type="checkbox" ${enabled[k]!==false?"checked":""} onchange="en('${k}',this.checked)"> ${I[k]} ${k}</label>`).join("");focus.innerHTML=Object.keys(F).map(k=>`<option>${k}</option>`).join("");event.innerHTML=Object.keys(E).map(k=>`<option>${k}</option>`).join("");cc.innerHTML=["場所","季節","時間","衣装","表情","シチュエーション","構図","注目部位","ポーズ","小物","テーマ"].map(k=>`<option>${k}</option>`).join("");renderCustom()}
+function setup(){
+ const checksEl=document.getElementById("checks"), focusEl=document.getElementById("focus"), eventEl=document.getElementById("event"), ccEl=document.getElementById("cc");
+ checksEl.innerHTML=K.map(k=>`<label class="check"><input type="checkbox" ${enabled[k]!==false?"checked":""} onchange="en('${k}',this.checked)"> ${I[k]} ${k}</label>`).join("");
+ focusEl.innerHTML=Object.keys(F).map(k=>`<option>${k}</option>`).join("");
+ eventEl.innerHTML=Object.keys(E).map(k=>`<option>${k}</option>`).join("");
+ ccEl.innerHTML=["場所","季節","時間","衣装","表情","シチュエーション","構図","注目部位","ポーズ","小物","テーマ"].map(k=>`<option>${k}</option>`).join("");
+ renderCustom();
+}
+
 function en(k,v){enabled[k]=v;localStorage.ideaEnabled=JSON.stringify(enabled);render()}
-focus.onchange=()=>{current=current||make();current.注目部位=focus.value;current.ポーズ=pick(F[focus.value]);render();sync()}
-pose.onchange=()=>{current=current||make();current.ポーズ=pose.value;render()}
-function sync(){focus.value=current?.注目部位||"なし";pose.innerHTML=(F[focus.value]||F.なし).map(x=>`<option>${x}</option>`).join("");if(current?.ポーズ)pose.value=current.ポーズ}
+document.getElementById("focus").onchange=()=>{current=current||make();current.注目部位=document.getElementById("focus").value;current.ポーズ=pick(F[current.注目部位]||F.なし);render();sync()}
+document.getElementById("pose").onchange=()=>{current=current||make();current.ポーズ=document.getElementById("pose").value;render()}
+function sync(){const f=document.getElementById("focus"),ps=document.getElementById("pose");f.value=current?.注目部位||"なし";ps.innerHTML=(F[f.value]||F.なし).map(x=>`<option>${x}</option>`).join("");if(current?.ポーズ)ps.value=current.ポーズ}
+
 function mode(m){theme.classList.toggle("hidden",m!="theme");tn.classList.toggle("active",m=="normal");tt.classList.toggle("active",m=="theme")}
-function themeGen(){let s=themeIn.value,o={};if(/寂|孤独|切ない/.test(s))o={場所:"駅のホーム",時間:"夕方",季節:"秋",表情:"少し寂しげ",シチュエーション:"一人で物思いにふけっている",構図:"後ろ姿"};else if(/夏|青春/.test(s))o={場所:"海辺",時間:"夕方",季節:"夏",衣装:"私服",表情:"楽しそう",シチュエーション:"景色を眺めている"};else if(/雨/.test(s))o={場所:"雨上がりの商店街",時間:"夕方",季節:"秋",表情:"少し寂しげ",シチュエーション:"帰るところ",構図:"水たまりの反射"};else if(/楽しい|明るい/.test(s))o={場所:"学校の屋上",時間:"放課後",季節:"夏",表情:"穏やかな笑顔"};else if(/不安|怖い/.test(s))o={場所:"古い神社",時間:"夜",季節:"冬",表情:"不安そう"};current=make(o);current.テーマ=s;render();sync()}
+const THEME_BUNDLES=[
+ {keys:["夏","青春","海"],o:{場所:"海辺",時間:"夕方",季節:"夏",衣装:"私服",表情:"楽しそう",シチュエーション:"景色を眺めている",構図:"水平線を大きく入れる"},extra:["風で髪や服が揺れる","入道雲","飲み物やアイス"]},
+ {keys:["雨","一人","帰る","帰宅"],o:{場所:"雨上がりの商店街",時間:"夕方",季節:"秋",衣装:"私服＋薄手の上着",表情:"少し寂しげ",シチュエーション:"帰るところ",構図:"水たまりの反射"},extra:["傘","濡れた路面","駅へ向かう"]},
+ {keys:["寂しい","孤独","切ない"],o:{場所:"駅のホーム",時間:"夕方",季節:"秋",衣装:"コート＋マフラー",表情:"少し寂しげ",シチュエーション:"一人で物思いにふけっている",構図:"後ろ姿"},extra:["遠くの電車","冷たい風","誰かを待った痕跡"]},
+ {keys:["楽しい","明るい"],o:{場所:"学校の屋上",時間:"放課後",季節:"夏",衣装:"制服",表情:"穏やかな笑顔",シチュエーション:"友人と話している",構図:"空を大きく入れる"},extra:["風で髪が揺れる","青空","飲み物"]},
+ {keys:["不安","怖い"],o:{場所:"古い神社",時間:"夜",季節:"冬",衣装:"コート＋マフラー",表情:"不安そう",シチュエーション:"何かを探している",構図:"木々を前景に"},extra:["遠くの灯り","足音","古い看板"]}
+];
+function themeGen(){
+ const s=themeIn.value.trim(); if(!s){status.textContent="テーマを入力してね。";return}
+ const hits=THEME_BUNDLES.filter(b=>b.keys.some(k=>s.includes(k)));
+ let o={}; if(hits.length){hits.forEach(b=>Object.assign(o,b.o))} else {
+   if(/春|桜|花見/.test(s))o={季節:"春"};
+   if(/夏|海|祭|花火/.test(s))o={季節:"夏"};
+   if(/秋|紅葉|月見/.test(s))o={季節:"秋"};
+   if(/冬|雪|クリスマス/.test(s))o={季節:"冬"};
+   if(/学校|青春/.test(s))o.場所="学校の屋上";
+   if(/駅/.test(s))o.場所="駅のホーム";
+   if(/海/.test(s))o.場所="海辺";
+   if(/雨/.test(s))o.場所="雨上がりの商店街";
+ }
+ // 明示された条件を最後に優先
+ if(/春/.test(s))o.季節="春"; if(/夏/.test(s))o.季節="夏"; if(/秋/.test(s))o.季節="秋"; if(/冬/.test(s))o.季節="冬";
+ if(/雨/.test(s))o.天候="雨";
+ if(/一人|孤独|寂しい/.test(s))o.シチュエーション="一人で物思いにふけっている";
+ current=make(o); current.テーマ=s; current.テーマ補足=hits.flatMap(b=>b.extra).slice(0,3).join("／"); render(); sync(); status.textContent="テーマを中心に生成しました！"
+}
 function themeRandom(){themeIn.value=pick(["ちょっと寂しい絵","夏の青春","雨の日に一人で帰る感じ","明るくて楽しい絵","ちょっと不安になる雰囲気"]);themeGen()}
+
 const T=["風で髪や服が少し揺れる瞬間にする","遠くに誰かの姿を小さく入れる","足元に落ちた何かに気づく","ふとスマホに通知が届く","背景に季節を感じる小さな出来事を入れる"],O=["古いラジオ","巨大な風船","一輪だけの花","見覚えのない鍵","レトロなカメラ","紙飛行機","小さなトランク","金魚鉢","古い地図","片方だけの手袋"];
 function extra(){let z=document.getElementById("extra");if(z)z.remove();let ks=["もう一捻り","異物","少し前","少し後"].filter(k=>current[k]);if(!ks.length)return;z=document.createElement("div");z.id="extra";z.className="panel";z.innerHTML="<b>✨ 追加アイデア</b>"+ks.map(k=>`<div class="story"><b>${k}</b><br>${esc(current[k])}</div>`).join("");result.after(z)}
 function twist(){current["もう一捻り"]=pick(T);extra()}function odd(){current["異物"]=pick(O);extra()}function story(){current["少し前"]=pick(["学校や家を出てここへ向かった","誰かと話したあと一人になった","何かを探しながら来た"]);current["少し後"]=pick(["少しして誰かが現れる","そのまま帰る","思いがけない出来事が起こる"]);extra()}
 function related(){let q=relIn.value.trim(),a=R[q]||[];custom.filter(x=>x.word==q).forEach(x=>a=a.concat(x.related));relOut.innerHTML=a.length?a.map(x=>`<span class="tag">${esc(x)}</span>`).join(""):"<div class='small'>未登録です。マイデータから追加できます。</div>"}
-function eventGen(){let d=E[event.value],o={季節:d[0],衣装:d[2],シチュエーション:pick(d[4])};if(D.場所.some(x=>x[0]==d[1]))o.場所=d[1];current=make(o);current.イベント=event.value;current.小物=pick(d[3]);render();sync()}
+function eventGen(){const ev=document.getElementById("event").value,d=E[ev],o={季節:d[0],衣装:d[2],シチュエーション:pick(d[4])};if(D.場所.some(x=>x[0]==d[1]))o.場所=d[1];current=make(o);current.イベント=ev;current.小物=pick(d[3]);render();sync();status.textContent=ev+"を中心に生成しました！"}
 function addCustom(){let w=cw.value.trim();if(!w)return;custom.push({word:w,category:cc.value,related:cr.value.split(",").map(x=>x.trim()).filter(Boolean)});localStorage.ideaCustom=JSON.stringify(custom);cw.value="";cr.value="";renderCustom()}
 function renderCustom(){document.getElementById("custom").innerHTML=custom.length?custom.map((x,i)=>`<div class="card"><b>${esc(x.word)}</b> <span class="tag">${esc(x.category)}</span><div class="small">${x.related.map(esc).join(" / ")}</div><button class="danger" onclick="custom.splice(${i},1);localStorage.ideaCustom=JSON.stringify(custom);renderCustom()">削除</button></div>`).join(""):"<div class='small'>まだありません。</div>"}
 setup();generate();saved();
