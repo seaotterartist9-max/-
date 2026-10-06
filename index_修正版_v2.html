@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5f0">
+<title>お絵描きアイデアガチャ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f5f0;color:#292929;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+main{max-width:600px;margin:auto;padding:18px 14px 40px}h1{font-size:24px;margin:6px 0}.sub,.small{color:#777;font-size:12px}.card,.panel{background:#fff;border:1px solid #e6e2da;border-radius:16px;padding:14px;margin:9px 0;box-shadow:0 2px 8px #0001}
+.row{display:flex;gap:10px;align-items:flex-start}.icon{font-size:21px;width:28px}.label{font-size:12px;font-weight:700;color:#777}.value{font-size:17px;margin-top:3px;line-height:1.5}
+button,select,input,textarea{font:inherit}button{border:0;border-radius:12px;padding:11px 12px;font-weight:700}.primary{width:100%;background:#292929;color:white;font-size:17px;margin:10px 0}.secondary{background:#eeeae2}.danger{background:#f1dfdf}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.lock{margin-left:auto;background:#eeeae2;padding:7px}.lock.on{background:#292929;color:#fff}
+select,input,textarea{width:100%;border:1px solid #ddd7cc;border-radius:11px;padding:10px;background:#fff}.field{margin:9px 0}.field label{display:block;font-size:12px;color:#777;font-weight:700;margin-bottom:4px}
+.check{background:#f5f2ec;border-radius:11px;padding:9px}.check input{width:auto}.tag{display:inline-block;background:#eeeae2;border-radius:99px;padding:4px 8px;margin:3px;font-size:11px}.story{background:#f5f2ec;border-radius:11px;padding:10px;margin-top:7px;line-height:1.5}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.tab{background:#eeeae2}.tab.active{background:#292929;color:#fff}.hidden{display:none}summary{font-weight:700;padding:9px 0;cursor:pointer}.status{text-align:center;color:#777;font-size:12px;min-height:18px;margin:6px}
+</style></head><body><main>
+<h1>🎨 お絵描きアイデアガチャ</h1><div class="sub">描きたいものが決まらない時の発想エンジン。</div>
+
+<div class="tabs"><button id="tn" class="tab active" onclick="mode('normal')">🎲 通常ガチャ</button><button id="tt" class="tab" onclick="mode('theme')">💭 テーマから</button></div>
+<section id="theme" class="panel hidden"><h3>💭 テーマ・感情</h3><textarea id="themeIn" placeholder="例：夏の青春、ちょっと寂しい絵"></textarea><div class="actions" style="margin-top:8px"><button class="secondary" onclick="themeGen()">生成</button><button class="secondary" onclick="themeRandom()">おまかせ</button></div></section>
+
+<section class="panel"><details><summary>⚙️ 詳細設定</summary>
+<div class="small">🔒 ロック＝固定　／　OFF＝生成しない</div><div id="checks" class="grid" style="margin-top:8px"></div>
+<div class="field"><label>🎯 注目部位</label><select id="focus"></select></div>
+<div class="field"><label>🧍 ポーズ</label><select id="pose"></select></div>
+</details></section>
+
+<section id="result"></section>
+<button class="primary" onclick="generate()">🎲 アイデアを生成</button>
+<div class="grid3"><button class="secondary" onclick="save()">♡ 保存</button><button class="secondary" onclick="copy()">⧉ コピー</button><button class="secondary" onclick="unlock()">🔓 全解除</button></div>
+<div class="grid3" style="margin-top:8px"><button class="secondary" onclick="twist()">💡 もう一捻り</button><button class="secondary" onclick="odd()">🌀 異物</button><button class="secondary" onclick="story()">📖 前後</button></div>
+
+<section class="panel"><details><summary>🔎 関連ワード</summary><input id="relIn" placeholder="例：夏、猫、雨"><button class="secondary" style="margin-top:8px;width:100%" onclick="related()">🔎 探す</button><div id="relOut"></div></details></section>
+<section class="panel"><details><summary>🎉 イベント</summary><select id="event"></select><button class="secondary" style="margin-top:8px;width:100%" onclick="eventGen()">🎉 イベントで生成</button></details></section>
+<section class="panel"><details><summary>👤 マイデータ</summary><div class="small">自分用のワードを追加できます。端末内に保存されます。</div>
+<div class="field"><label>ワード</label><input id="cw" placeholder="例：宇宙船"></div><div class="field"><label>カテゴリ</label><select id="cc"></select></div>
+<div class="field"><label>関連ワード（カンマ区切り）</label><input id="cr" placeholder="宇宙,星,SF"></div><button class="secondary" onclick="addCustom()">＋追加</button><div id="custom"></div>
+</details></section>
+<div id="status" class="status"></div>
+<section><h3>保存したお題</h3><div id="saved" class="small">まだありません。</div></section>
+</main>
+
+<script>
+const D={場所:[
+["海辺",["春","夏","秋"],["昼","夕方","夜"],["水着","私服","薄手の上着"],["海を眺める","散歩する","夕日を見る"],["水平線を大きく入れる","後ろ姿","波打ち際のローアングル"]],
+["学校の屋上",["春","夏","秋"],["昼","放課後","夕方"],["制服","制服＋カーディガン","私服"],["友人と話す","一人で空を眺める","風に当たる"],["空を大きく入れる","フェンス越し","少し離れた遠景"]],
+["雨上がりの商店街",["春","夏","秋","冬"],["夕方","夜","放課後"],["制服","私服＋薄手の上着","コート"],["誰かを待つ","店を眺める","傘を閉じる"],["水たまりの反射","道路の反対側から","看板を背景に"]],
+["古い神社",["春","夏","秋","冬"],["朝","夕方","夜"],["制服","和装","普段着＋羽織"],["参拝する","境内を歩く","何かを探す"],["鳥居越し","階段の下から","木々を前景に"]],
+["駅のホーム",["春","夏","秋","冬"],["朝","夕方","夜"],["制服","通勤服","コート＋マフラー"],["電車を待つ","誰かを見送る","偶然再会する"],["ホームを奥行きに使う","電車越し","横顔のアップ"]]],
+時間:["朝","昼","放課後","夕方","夜","深夜"],季節:["春","夏","秋","冬"],衣装:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","コート＋マフラー","和装","スポーティーな服"],表情:["楽しそう","少し寂しげ","照れた笑顔","驚いている","眠そう","真剣な表情","穏やかな笑顔","不安そう"],シチュエーション:["誰かを待っている","友人と話している","一人で物思いにふけっている","何かを探している","偶然誰かと出会う","帰るところ","景色を眺めている"],構図:["顔を大きく見せる寄りの構図","全身を入れた縦構図","後ろ姿","少し見上げるローアングル","少し見下ろすハイアングル","背景を大きく入れた遠景","手前に小物を置いた前景構図"]};
+const ACTIONS={
+"海辺":["波打ち際を歩く","海を眺めながら立つ","髪を押さえる","飲み物を飲む","靴を脱ぐ"],
+"学校の屋上":["友人と話す","フェンスにもたれる","空を見上げる","髪を押さえる","スマホを見る"],
+"雨上がりの商店街":["傘を閉じる","水たまりを避けて歩く","店先で立ち止まる","ショーウィンドウを見る","濡れた髪を整える"],
+"古い神社":["お参りする","おみくじを引く","階段を上る","落ち葉を拾う","境内を歩く"],
+"駅のホーム":["電車を待つ","電車に乗り込む","手を振って見送る","スマホで時刻を確認する","ホームを歩く"]};
+const GENERIC_ACTIONS=["歩く","立ち止まる","座る","振り返る","手を伸ばす","髪や服を整える","何かを見る","スマホを確認する"];
+const F={"なし":["特に指定しない"],"顔":["顔全体を大きく見せる","少し横顔にする","表情を強調する"],"横顔":["横顔を大きく見せる","視線を遠くに向ける"],"目":["目元を大きく見せる","視線を印象的にする","伏し目にする"],"髪":["髪の流れを見せる","風で髪が揺れる"],"手":["頬に手を添える","手元をやや大きく見せる","何かを受け取る"],"胸元":["胸元が分かる上半身構図","衣装の襟やアクセサリーを見せる"],"胸":["上半身を中心にした構図","衣装のシルエットを意識する"],"背中":["背中を大きく見せる","振り返りかける"],"腰":["腰まで入る縦構図","体のひねりを意識する"],"お腹":["腰から上を中心にする","衣装のシルエットを見せる"],"鼠径部":["脚の付け根まで含む自然な全身構図","座り姿などで脚のラインを意識する"],"腿":["腿まで入る構図","片脚を軽く曲げる"],"膝":["膝まで入る構図","座り姿にする"],"脚":["脚まで入る縦構図","片脚を軽く曲げる","ベンチに座る"],"足首":["足元まで入る構図","靴や靴下も見せる"],"足":["足元をやや大きく見せる","歩いている瞬間にする"],"足先":["足先まで入る構図","つま先の向きを意識する"]};
+const R={夏:["海","プール","かき氷","アイス","スイカ","水着","浴衣","夏祭り","花火","ひまわり","入道雲","風鈴"],猫:["窓辺","こたつ","段ボール","屋根","路地裏","膝の上","魚","毛糸玉","日向ぼっこ"],雨:["傘","水たまり","窓","紫陽花","商店街","駅","雨音","反射"],学校:["屋上","教室","廊下","図書室","体育館","校庭","制服","黒板","放課後","文化祭"],海:["砂浜","波打ち際","水平線","海の家","浮き輪","貝殻","夕日","水着"],冬:["雪","イルミネーション","クリスマス","こたつ","マフラー","手袋","吐く息","初詣"],秋:["紅葉","落ち葉","月見","文化祭","ハロウィン","金木犀","夕焼け","読書"],春:["桜","花見","入学式","卒業式","新生活","菜の花","花束"]};
+const E={花見:["春","公園","私服",["桜","お弁当","レジャーシート"],["桜を眺める","お弁当を食べる"]],夏祭り:["夏","海辺","浴衣",["屋台","提灯","うちわ"],["屋台を見る","かき氷を食べる","花火を見る"]],花火大会:["夏","海辺","浴衣",["花火","屋台","うちわ"],["花火を見上げる","人混みを歩く"]],文化祭:["秋","学校の屋上","制服",["模擬店","ポスター","ステージ"],["模擬店を手伝う","ステージを見る"]],ハロウィン:["秋","古い神社","仮装衣装",["お菓子","かぼちゃ","ランタン"],["お菓子をもらう","街を歩く"]],クリスマス:["冬","駅のホーム","コート＋マフラー",["ツリー","プレゼント","ケーキ","雪"],["イルミネーションを見る","プレゼントを渡す"]],お正月:["冬","古い神社","和装",["門松","おみくじ","鏡餅"],["初詣する","おみくじを引く"]],バレンタイン:["冬","学校の屋上","私服",["チョコレート","ラッピング","紙袋"],["チョコを渡す","誰かを待つ"]],卒業式:["春","学校の屋上","制服",["卒業証書","花束","黒板"],["友達と話す","校舎を振り返る"]]};
+const I={場所:"📍",時間:"🕐",季節:"🍂",衣装:"👗",表情:"🙂",シチュエーション:"🎬",構図:"📐",注目部位:"🎯",ポーズ:"🧍",小物:"🧸",イベント:"🎉",テーマ:"💭"};
+const K=["場所","時間","季節","衣装","表情","シチュエーション","行動","構図","注目部位","ポーズ","小物"];
+const defaultEnabled={場所:true,時間:true,季節:true,衣装:true,表情:true,シチュエーション:true,行動:true,構図:true,注目部位:true,ポーズ:true,小物:true};
+let current=null,locks=JSON.parse(localStorage.ideaLocks||"{}"),enabled=Object.assign({},defaultEnabled,JSON.parse(localStorage.ideaEnabled||"{}")),custom=JSON.parse(localStorage.ideaCustom||"[]");
+
+const p=()=>D.場所[Math.floor(Math.random()*D.場所.length)], pick=a=>a[Math.floor(Math.random()*a.length)], esc=s=>String(s).replace(/[&<>\"]+/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[x]));
+const SEASON_CLOTHES={
+ 春:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","和装","スポーティーな服"],
+ 夏:["制服","私服","ワンピース","パーカー＋スカート","和装","スポーティーな服","水着"],
+ 秋:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","コート＋マフラー","和装","スポーティーな服"],
+ 冬:["制服＋カーディガン","私服","ワンピース","コート＋マフラー","和装"]
+};
+const SEASON_BAD_CLOTHES={春:["水着"],秋:["水着"],冬:["水着","薄手の上着"],夏:["コート＋マフラー"]};
+const CUSTOM_WORDS=()=>custom.flatMap(x=>[x.word,...x.related].filter(Boolean));
+function customCandidates(k){return custom.filter(x=>x.category===k).flatMap(x=>[x.word,...x.related]).filter(Boolean)}
+function seasonalClothes(season){return SEASON_CLOTHES[season]||D.衣装}
+function placeClothes(season,x){
+ const allowed=seasonalClothes(season),place=x&&x[3]||[];
+ const a=place.filter(v=>allowed.includes(v)&&!(SEASON_BAD_CLOTHES[season]||[]).includes(v));
+ return a.length?a:allowed;
+}
+function compatible(k,v,x){let i={季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k];return !i||x[i].includes(v)}
+
+// 「項目ごとの独立抽選」ではなく、まず1枚の場面を作り、そこから各項目を決める。
+const STORY_SCENES=[
+ {場所:"海辺",季節:"夏",時間:"夕方",衣装:"私服",表情:"穏やかな笑顔",シチュエーション:"景色を眺めている",行動:"海を眺めながら立つ",構図:"水平線を大きく入れる",小物:"飲み物",注目部位:"髪",ポーズ:"風で髪を揺らす"},
+ {場所:"海辺",季節:"夏",時間:"昼",衣装:"水着",表情:"楽しそう",シチュエーション:"散歩する",行動:"波打ち際を歩く",構図:"波打ち際のローアングル",小物:"浮き輪",注目部位:"脚",ポーズ:"片脚を軽く曲げる"},
+ {場所:"学校の屋上",季節:"春",時間:"放課後",衣装:"制服＋カーディガン",表情:"照れた笑顔",シチュエーション:"友人と話している",行動:"友人と話す",構図:"空を大きく入れる",小物:"飲み物",注目部位:"顔",ポーズ:"少し顔を横に向ける"},
+ {場所:"学校の屋上",季節:"夏",時間:"放課後",衣装:"制服",表情:"楽しそう",シチュエーション:"一人で空を眺めている",行動:"空を見上げる",構図:"少し離れた遠景",小物:"スマートフォン",注目部位:"髪",ポーズ:"風で髪を揺らす"},
+ {場所:"雨上がりの商店街",季節:"秋",時間:"夕方",衣装:"私服＋薄手の上着",表情:"少し寂しげ",シチュエーション:"帰るところ",行動:"水たまりを避けて歩く",構図:"水たまりの反射",小物:"傘",注目部位:"足",ポーズ:"歩いている瞬間にする"},
+ {場所:"雨上がりの商店街",季節:"冬",時間:"夜",衣装:"コート",表情:"穏やかな笑顔",シチュエーション:"店を眺める",行動:"ショーウィンドウを見る",構図:"看板を背景に",小物:"紙袋",注目部位:"手",ポーズ:"何かを受け取る"},
+ {場所:"古い神社",季節:"春",時間:"朝",衣装:"普段着＋羽織",表情:"穏やかな笑顔",シチュエーション:"参拝する",行動:"お参りする",構図:"鳥居越し",小物:"お守り",注目部位:"手",ポーズ:"手元をやや大きく見せる"},
+ {場所:"古い神社",季節:"秋",時間:"夕方",衣装:"和装",表情:"少し寂しげ",シチュエーション:"何かを探している",行動:"落ち葉を拾う",構図:"木々を前景に",小物:"落ち葉",注目部位:"背中",ポーズ:"振り返りかける"},
+ {場所:"駅のホーム",季節:"秋",時間:"夕方",衣装:"コート＋マフラー",表情:"少し寂しげ",シチュエーション:"誰かを待っている",行動:"電車を待つ",構図:"ホームを奥行きに使う",小物:"スマートフォン",注目部位:"横顔",ポーズ:"少し横顔にする"},
+ {場所:"駅のホーム",季節:"冬",時間:"夜",衣装:"コート＋マフラー",表情:"不安そう",シチュエーション:"誰かを見送る",行動:"手を振って見送る",構図:"電車越し",小物:"切符",注目部位:"目",ポーズ:"視線を印象的にする"},
+ {場所:"駅のホーム",季節:"春",時間:"朝",衣装:"私服",表情:"驚いている",シチュエーション:"偶然再会する",行動:"振り返る",構図:"横顔のアップ",小物:"通学バッグ",注目部位:"顔",ポーズ:"表情を強調する"}
+];
+function sceneMatches(sc,seed){
+ for(const k of ["場所","季節","時間","衣装","表情","シチュエーション","行動","構図"]){
+  if(seed[k] && sc[k]!==seed[k]) return false;
+  if(locks[k]&&current?.[k]!=null&&sc[k]!==current[k]) return false;
+ }
+ return true;
+}
+function chooseScene(seed){
+ let a=STORY_SCENES.filter(sc=>sceneMatches(sc,seed));
+ if(seed.場所)a=a.filter(sc=>sc.場所===seed.場所);
+ if(!a.length && seed.場所)a=STORY_SCENES.filter(sc=>sc.場所===seed.場所);
+ if(!a.length)a=STORY_SCENES;
+ return pick(a);
+}
+function customFor(k,base){
+ const a=customCandidates(k); if(!a.length)return null;
+ // 小物・テーマは場面に合う関連語がある場合を優先。
+ const text=Object.values(base||{}).join(" ");
+ const hit=custom.filter(x=>x.category===k && [x.word,...x.related].some(w=>w&&text.includes(w)));
+ const pool=(hit.length?hit:custom.filter(x=>x.category===k)).flatMap(x=>[x.word,...x.related]).filter(Boolean);
+ return pool.length&&Math.random()<.32?pick(pool):null;
+}
+function make(seed={}){
+ const scene=chooseScene(seed), o={};
+ const merged=Object.assign({},scene,seed);
+ const season=merged.季節||pick(D.場所.find(z=>z[0]===merged.場所)?.[1]||D.季節);
+ let x=D.場所.find(z=>z[0]===merged.場所)||p();
+ if(!merged.場所)x=D.場所.find(z=>z[0]===scene.場所)||x;
+ // ロック値は最後まで尊重。矛盾したロックはその値を優先し、他項目を合わせる。
+ const forced={};
+ K.forEach(k=>{if(enabled[k]!==false&&locks[k]&&current?.[k]!=null)forced[k]=current[k]});
+ Object.assign(forced,seed);
+ const finalSeason=forced.季節||season;
+ if(enabled.季節!==false)o.季節=finalSeason;
+ if(enabled.場所!==false)o.場所=forced.場所||merged.場所||x[0];
+ x=D.場所.find(z=>z[0]===o.場所)||x;
+ for(const k of K){
+  if(enabled[k]===false||o[k]!=null)continue;
+  if(forced[k]!=null){o[k]=forced[k];continue}
+  if(k==="場所")continue;
+  if(k==="衣装"){
+   const customCloth=customFor("衣装",Object.assign({},o,merged));
+   const pool=placeClothes(finalSeason,x);
+   o[k]=customCloth && !(SEASON_BAD_CLOTHES[finalSeason]||[]).includes(customCloth)?customCloth:pick(pool);
+  }else if(k==="注目部位")o[k]=merged[k]||pick(Object.keys(F).filter(z=>z!=="なし"));
+  else if(k==="ポーズ")o[k]=merged[k]||pick(F[o.注目部位]||F.なし);
+  else if(k==="小物")o[k]=merged[k]||customFor("小物",Object.assign({},o,merged))||pick(["スマートフォン","バッグ","飲み物","本","傘"]);
+  else if(k==="時間")o[k]=merged[k]||pick(x[2]);
+  else if(k==="表情")o[k]=merged[k]||pick(D.表情);
+  else if(k==="シチュエーション")o[k]=merged[k]||pick(x[4]);
+  else if(k==="行動")o[k]=merged[k]||pick(ACTIONS[o.場所]||GENERIC_ACTIONS);
+  else if(k==="構図")o[k]=merged[k]||pick(x[5]);
+ }
+ // 場所固有の候補と食い違った場合は、場所に合わせて自然なものへ。
+ const idx={時間:2,シチュエーション:4,構図:5};
+ for(const k of Object.keys(idx))if(enabled[k]!==false&&!compatible(k,o[k],x))o[k]=pick(x[idx[k]]);
+ if(enabled.衣装!==false && !placeClothes(finalSeason,x).includes(o.衣装))o.衣装=pick(placeClothes(finalSeason,x));
+ // マイデータは独立した「マイデータ」項目にはせず、登録カテゴリの候補としてだけ混ぜる。
+ for(const k of ["場所","時間","季節","衣装","表情","シチュエーション","行動","構図","注目部位","ポーズ","小物"]){
+  if(enabled[k]===false||seed[k]!=null||locks[k])continue;
+  const v=customFor(k,o); if(v==null)continue;
+  if(k==="衣装" && (SEASON_BAD_CLOTHES[finalSeason]||[]).includes(v))continue;
+  o[k]=v;
+ }
+ // 行動は場所・シチュエーションに合わせて自然な候補へ寄せる。
+ if(enabled.行動!==false && !seed.行動 && !locks.行動){
+  const ap=ACTIONS[o.場所]||GENERIC_ACTIONS;
+  if(!ap.includes(o.行動)) o.行動=pick(ap);
+ }
+ // ポーズは注目部位に合わせ直す。ただし明示指定は維持。
+ if(enabled.ポーズ!==false && !seed.ポーズ && !locks.ポーズ && o.注目部位 && F[o.注目部位])o.ポーズ=pick(F[o.注目部位]);
+ return o;
+}
+function render(){result.innerHTML=Object.keys(current||{}).map(k=>`<div class="card"><div class="row"><div class="icon">${I[k]||"✨"}</div><div style="flex:1"><div class="label">${k}</div><div class="value">${esc(current[k])}</div></div>${K.includes(k)?`<button class="lock ${locks[k]?"on":""}" onclick="lock('${k}')">${locks[k]?"🔒":"🔓"}</button>`:""}</div></div>`).join("")}
+function generate(){current=make();render();sync();status.textContent="新しいアイデアを生成しました！"}
+function lock(k){locks[k]=!locks[k];localStorage.ideaLocks=JSON.stringify(locks);render()}
+function unlock(){locks={};localStorage.ideaLocks="{}";render()}
+function copy(){navigator.clipboard?.writeText(Object.keys(current).map(k=>(I[k]||"✨")+" "+k+"："+current[k]).join("\n"));status.textContent="コピーしました！"}
+function save(){let a=JSON.parse(localStorage.drawingIdeas||"[]");a.unshift(current);localStorage.drawingIdeas=JSON.stringify(a.slice(0,30));saved()}
+function saved(){let a=JSON.parse(localStorage.drawingIdeas||"[]");document.getElementById("saved").innerHTML=a.length?a.map((x,i)=>`<div class="card"><b>${esc(x.場所||"")}</b>・${esc(x.季節||"")}・${esc(x.時間||"")}<div class="small">${esc(x.衣装||"")}／${esc(x.シチュエーション||"")}</div><button class="danger" onclick="del(${i})">削除</button></div>`).join(""):"まだありません。"}
+function del(i){let a=JSON.parse(localStorage.drawingIdeas||"[]");a.splice(i,1);localStorage.drawingIdeas=JSON.stringify(a);saved()}
+function setup(){
+ const checksEl=document.getElementById("checks"), focusEl=document.getElementById("focus"), eventEl=document.getElementById("event"), ccEl=document.getElementById("cc");
+ checksEl.innerHTML=K.map(k=>`<label class="check"><input type="checkbox" ${enabled[k]!==false?"checked":""} onchange="en('${k}',this.checked)"> ${I[k]} ${k}</label>`).join("");
+ focusEl.innerHTML=Object.keys(F).map(k=>`<option>${k}</option>`).join("");
+ eventEl.innerHTML=Object.keys(E).map(k=>`<option>${k}</option>`).join("");
+ ccEl.innerHTML=["場所","季節","時間","衣装","表情","シチュエーション","行動","構図","注目部位","ポーズ","小物","テーマ"].map(k=>`<option>${k}</option>`).join("");
+ renderCustom();
+}
+
+function en(k,v){enabled[k]=v;localStorage.ideaEnabled=JSON.stringify(enabled);render()}
+document.getElementById("focus").onchange=()=>{current=current||make();current.注目部位=document.getElementById("focus").value;current.ポーズ=pick(F[current.注目部位]||F.なし);render();sync()}
+document.getElementById("pose").onchange=()=>{current=current||make();current.ポーズ=document.getElementById("pose").value;render()}
+function sync(){const f=document.getElementById("focus"),ps=document.getElementById("pose");f.value=current?.注目部位||"なし";ps.innerHTML=(F[f.value]||F.なし).map(x=>`<option>${x}</option>`).join("");if(current?.ポーズ)ps.value=current.ポーズ}
+
+function mode(m){theme.classList.toggle("hidden",m!="theme");tn.classList.toggle("active",m=="normal");tt.classList.toggle("active",m=="theme")}
+const THEME_BUNDLES=[
+ {keys:["夏","青春","海"],o:{場所:"海辺",時間:"夕方",季節:"夏",衣装:"私服",表情:"楽しそう",シチュエーション:"景色を眺めている",行動:"海を眺めながら立つ",構図:"水平線を大きく入れる"},extra:["風で髪や服が揺れる","入道雲","飲み物やアイス"]},
+ {keys:["雨","一人","帰る","帰宅"],o:{場所:"雨上がりの商店街",時間:"夕方",季節:"秋",衣装:"私服＋薄手の上着",表情:"少し寂しげ",シチュエーション:"帰るところ",行動:"水たまりを避けて歩く",構図:"水たまりの反射"},extra:["傘","濡れた路面","駅へ向かう"]},
+ {keys:["寂しい","孤独","切ない"],o:{場所:"駅のホーム",時間:"夕方",季節:"秋",衣装:"コート＋マフラー",表情:"少し寂しげ",シチュエーション:"一人で物思いにふけっている",行動:"立ち止まって遠くを見る",構図:"後ろ姿"},extra:["遠くの電車","冷たい風","誰かを待った痕跡"]},
+ {keys:["楽しい","明るい"],o:{場所:"学校の屋上",時間:"放課後",季節:"夏",衣装:"制服",表情:"穏やかな笑顔",シチュエーション:"友人と話している",行動:"友人と話す",構図:"空を大きく入れる"},extra:["風で髪が揺れる","青空","飲み物"]},
+ {keys:["不安","怖い"],o:{場所:"古い神社",時間:"夜",季節:"冬",衣装:"コート＋マフラー",表情:"不安そう",シチュエーション:"何かを探している",行動:"落ち葉を拾う",構図:"木々を前景に"},extra:["遠くの灯り","足音","古い看板"]}
+];
+function themeGen(){
+ const s=themeIn.value.trim(); if(!s){status.textContent="テーマを入力してね。";return}
+ const hits=THEME_BUNDLES.filter(b=>b.keys.some(k=>s.includes(k)));
+ let o={}; if(hits.length){hits.forEach(b=>Object.assign(o,b.o))} else {
+   if(/春|桜|花見/.test(s))o={季節:"春"};
+   if(/夏|海|祭|花火/.test(s))o={季節:"夏"};
+   if(/秋|紅葉|月見/.test(s))o={季節:"秋"};
+   if(/冬|雪|クリスマス/.test(s))o={季節:"冬"};
+   if(/学校|青春/.test(s))o.場所="学校の屋上";
+   if(/駅/.test(s))o.場所="駅のホーム";
+   if(/海/.test(s))o.場所="海辺";
+   if(/雨/.test(s))o.場所="雨上がりの商店街";
+ }
+ // 明示された条件を最後に優先
+ if(/春/.test(s))o.季節="春"; if(/夏/.test(s))o.季節="夏"; if(/秋/.test(s))o.季節="秋"; if(/冬/.test(s))o.季節="冬";
+ if(/雨/.test(s))o.天候="雨";
+ if(/一人|孤独|寂しい/.test(s))o.シチュエーション="一人で物思いにふけっている";
+ current=make(o); current.テーマ=s; current.テーマ補足=hits.flatMap(b=>b.extra).slice(0,3).join("／"); render(); sync(); status.textContent="テーマを中心に生成しました！"
+}
+function themeRandom(){themeIn.value=pick(["ちょっと寂しい絵","夏の青春","雨の日に一人で帰る感じ","明るくて楽しい絵","ちょっと不安になる雰囲気"]);themeGen()}
+
+const T=["風で髪や服が少し揺れる瞬間にする","遠くに誰かの姿を小さく入れる","足元に落ちた何かに気づく","ふとスマホに通知が届く","背景に季節を感じる小さな出来事を入れる"],O=["古いラジオ","巨大な風船","一輪だけの花","見覚えのない鍵","レトロなカメラ","紙飛行機","小さなトランク","金魚鉢","古い地図","片方だけの手袋"];
+function extra(){let z=document.getElementById("extra");if(z)z.remove();let ks=["もう一捻り","異物","少し前","少し後"].filter(k=>current[k]);if(!ks.length)return;z=document.createElement("div");z.id="extra";z.className="panel";z.innerHTML="<b>✨ 追加アイデア</b>"+ks.map(k=>`<div class="story"><b>${k}</b><br>${esc(current[k])}</div>`).join("");result.after(z)}
+function twist(){current["もう一捻り"]=pick(T);extra()}function odd(){current["異物"]=pick(O);extra()}function story(){current["少し前"]=pick(["学校や家を出てここへ向かった","誰かと話したあと一人になった","何かを探しながら来た"]);current["少し後"]=pick(["少しして誰かが現れる","そのまま帰る","思いがけない出来事が起こる"]);extra()}
+function related(){let q=relIn.value.trim(),a=R[q]||[];custom.filter(x=>x.word==q).forEach(x=>a=a.concat(x.related));relOut.innerHTML=a.length?a.map(x=>`<span class="tag">${esc(x)}</span>`).join(""):"<div class='small'>未登録です。マイデータから追加できます。</div>"}
+function eventGen(){const ev=document.getElementById("event").value,d=E[ev],o={季節:d[0],衣装:d[2],シチュエーション:pick(d[4])};if(D.場所.some(x=>x[0]==d[1]))o.場所=d[1];current=make(o);current.イベント=ev;current.小物=pick(d[3]);render();sync();status.textContent=ev+"を中心に生成しました！"}
+function addCustom(){let w=cw.value.trim();if(!w)return;custom.push({word:w,category:cc.value,related:cr.value.split(",").map(x=>x.trim()).filter(Boolean)});localStorage.ideaCustom=JSON.stringify(custom);cw.value="";cr.value="";renderCustom()}
+function renderCustom(){document.getElementById("custom").innerHTML=custom.length?custom.map((x,i)=>`<div class="card"><b>${esc(x.word)}</b> <span class="tag">${esc(x.category)}</span><div class="small">${x.related.map(esc).join(" / ")}</div><button class="danger" onclick="custom.splice(${i},1);localStorage.ideaCustom=JSON.stringify(custom);renderCustom()">削除</button></div>`).join(""):"<div class='small'>まだありません。</div>"}
+setup();generate();saved();
+</script></body></html>
