@@ -66,6 +66,96 @@ const CUSTOM_WORDS=()=>custom.flatMap(x=>[x.word,...x.related].filter(Boolean));
 function customCandidates(k,season){return custom.filter(x=>x.category===k).flatMap(x=>[x.word,...x.related]).filter(Boolean)}
 function seasonalClothes(season){return SEASON_CLOTHES[season]||D.衣装}
 function compatible(k,v,x){let i={季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k];return !i||x[i].includes(v)}
+const SCENE_ACTIONS={
+"海辺":{
+ "海を眺める":["海を眺めながら立つ","水平線を見つめる","波の音に耳を澄ます"],
+ "散歩する":["波打ち際を歩く","砂浜をゆっくり歩く","貝殻を拾いながら歩く"],
+ "夕日を見る":["夕日に目を細める","海を見ながら立つ","沈む夕日を指さす"]
+},
+"学校の屋上":{
+ "友人と話す":["友人と話す","飲み物を片手に話す","笑いながら振り向く"],
+ "一人で空を眺める":["空を見上げる","フェンスにもたれて空を見る","流れる雲を目で追う"],
+ "風に当たる":["風に髪を押さえる","フェンスのそばで風を感じる","制服の裾を押さえる"]
+},
+"雨上がりの商店街":{
+ "誰かを待つ":["店先で立ち止まる","スマホを確認しながら待つ","通りの先を見る"],
+ "店を眺める":["ショーウィンドウを見る","店先の商品を眺める","看板を見上げる"],
+ "傘を閉じる":["傘を閉じる","傘の水滴を払う","濡れた髪を整える"]
+},
+"古い神社":{
+ "参拝する":["お賽銭を入れる","手を合わせる","鈴を鳴らしてお参りする"],
+ "境内を歩く":["ゆっくり歩く","落ち葉を踏みながら歩く","振り返りながら歩く"],
+ "何かを探す":["周囲を見回す","足元を覗き込む","落ちているものを探す"]
+},
+"駅のホーム":{
+ "電車を待つ":["電車を待つ","時刻表を確認する","ホームの先を見る"],
+ "誰かを見送る":["手を振って見送る","遠ざかる電車を見る","小さく手を振る"],
+ "偶然再会する":["驚いて振り返る","相手に手を振る","話しかけようと近づく"]
+},
+"魔法学校の屋上":{
+ "魔法陣を描く":["足元に魔法陣を描く","しゃがんで魔法陣を調べる","描いた魔法陣を見つめる"],
+ "友人と話す":["友人と話す","魔導具を見せながら話す","笑いながら振り向く"],
+ "空を眺める":["空を見上げる","空飛ぶものを目で追う","風に当たりながら空を見る"]
+},
+"月明かりの森":{
+ "光る植物を探す":["光る植物を覗き込む","しゃがんで足元を探す","木々の間を見回す"],
+ "森を歩く":["森の小道を歩く","木の根を避けながら歩く","振り返りながら歩く"],
+ "誰かを待つ":["森の奥を見つめて待つ","木のそばで立ち止まる","周囲を見回す"]
+},
+"空中都市の展望台":{
+ "空飛ぶ船を見る":["空飛ぶ船を見上げる","遠くの船を指さす","街並みを眺める"],
+ "街を見下ろす":["手すりから街を見下ろす","眼下の景色を眺める","遠くの建物を指さす"],
+ "風に当たる":["風で髪を押さえる","手すりのそばで風を感じる","衣装の裾を押さえる"]
+},
+"古代遺跡":{
+ "古代文字を読む":["壁の文字を指で追う","石碑を覗き込む","古代文字を読み解く"],
+ "何かを探す":["周囲を見回す","床の模様を調べる","落ちているものを探す"],
+ "仲間と相談する":["仲間と地図を広げる","指さしながら相談する","仲間の話を聞く"]
+},
+"魔法の湖畔":{
+ "水面を覗く":["水面を覗き込む","湖面に手を伸ばす","しゃがんで水面を見る"],
+ "光る魚を見る":["光る魚を目で追う","水面を覗き込む","魚に手を伸ばす"],
+ "湖を眺める":["湖を眺めながら立つ","水面を見つめる","湖畔で静かに佇む"]
+}
+};
+
+const SCENE_ACTIONS_GENERIC={
+"誰かを待っている":["通りの先を見る","スマホを確認しながら待つ","その場で立ち止まる"],
+"友人と話している":["友人と話す","笑いながら振り向く","相手の話を聞く"],
+"一人で物思いにふけっている":["遠くを見つめる","静かに立ち止まる","考えながら歩く"],
+"何かを探している":["周囲を見回す","足元を覗き込む","落ちているものを探す"],
+"偶然誰かと出会う":["驚いて振り返る","相手に手を振る","話しかけようと近づく"],
+"帰るところ":["歩きながら振り返る","帰る方向へ歩く","荷物を持ち直す"],
+"景色を眺めている":["景色を眺めながら立つ","遠くを見つめる","ゆっくり振り返る"],
+"仲間と話している":["仲間と相談する","地図を広げて話す","相手の話を聞く"],
+"未知の場所を訪れる":["周囲を見回す","慎重に歩く","目の前のものを調べる"]
+};
+
+const ACTION_DISTANCE_RULES=[
+ [/靴|足元|足先|波打ち際|歩く|走る|階段|しゃがむ|座る|脚|落ち葉を踏む/ ,["膝上","全身","遠景"]],
+ [/お賽銭|手を合わせる|鈴を鳴らす|手を振る|スマホ|話す|相談|地図|飲み物|髪|顔|表情|文字|読む|見る|見つめる|眺める|覗き込む/ ,["バストアップ","腰上","膝上"]],
+ [/見上げる|空を/ ,["腰上","膝上","全身"]],
+];
+
+function actionFitsDistance(action,distance){
+ if(!action||!distance)return true;
+ return ACTION_DISTANCE_RULES.some(([re,ds])=>re.test(action)&&ds.includes(distance)) ||
+   (!/靴|足元|足先|波打ち際|歩く|走る|階段|しゃがむ|座る|脚|落ち葉を踏む/.test(action) || distance!=="バストアップ");
+}
+function distancesForAction(action){
+ if(/靴|足元|足先|波打ち際|歩く|走る|階段|しゃがむ|座る|脚|落ち葉を踏む/.test(action))return["膝上","全身","遠景"];
+ if(/見上げる|空を/.test(action))return["腰上","膝上","全身"];
+ if(/お賽銭|手を合わせる|鈴を鳴らす|手を振る|スマホ|話す|相談|地図|飲み物|髪|文字|読む|見つめる|眺める|覗き込む/.test(action))return["バストアップ","腰上","膝上"];
+ return["腰上","膝上","全身"];
+}
+function sceneForAction(place,action,db){
+ const local=SCENE_ACTIONS[place]||{};
+ for(const [scene,acts] of Object.entries(local))if(acts.includes(action))return scene;
+ for(const [scene,acts] of Object.entries(SCENE_ACTIONS_GENERIC))if(acts.includes(action))return scene;
+ const row=db.場所.find(z=>z[0]===place);
+ return row?.[4]?.[0]||"景色を眺めている";
+}
+
 function make(seed={}){
  const fantasy=worldMode==="fantasy";
  const DB=fantasy?FANTASY:D;
@@ -73,10 +163,12 @@ function make(seed={}){
  let o={};
  const season=seed.季節||((locks.季節&&current?.季節)?current.季節:null)||pick(x[1]);
  const rel=n=>n==="1人"?"一人":n==="2人"?pick(fantasy?FANTASY_REL.slice(1):["友人","親友","恋人","兄弟・姉妹","同僚","初対面"]):pick(fantasy?["仲間とライバルが混在","仲間たち","冒険者の一行","魔法使いの集まり"]:["友人グループ","同僚たち","家族","クラスメイト"]);
- K.forEach(k=>{
-   if(enabled[k]===false)return;
-   if(seed[k]!=null){o[k]=seed[k];return}
-   if(locks[k]&&current?.[k]!=null){o[k]=current[k];return}
+
+ // 基本情報を先に決める。シチュエーション→行動→距離の順で依存関係を作る。
+ for(const k of ["性別","年齢","職業","人数","関係性","場所","時間","季節","衣装","表情","注目部位","小物","非現実要素"]){
+   if(enabled[k]===false)continue;
+   if(seed[k]!=null){o[k]=seed[k];continue}
+   if(locks[k]&&current?.[k]!=null){o[k]=current[k];continue}
    if(k==="性別")o[k]=pick(PEOPLE.性別);
    else if(k==="年齢")o[k]=pick(PEOPLE.年齢);
    else if(k==="人数")o[k]=pick(PEOPLE.人数);
@@ -86,34 +178,77 @@ function make(seed={}){
    else if(k==="衣装")o[k]=fantasy?pick(FANTASY.衣装):pick(seasonalClothes(season));
    else if(k==="職業")o[k]=fantasy?pick(["魔法使い","冒険者","騎士","錬金術師","研究者"]):((o.年齢==="10代")?"学生":pick(["会社員","教師","医師","店員","公務員","フリーランス","アーティスト"]));
    else if(k==="注目部位")o[k]=pick(Object.keys(F).filter(z=>z!=="なし"));
-   else if(k==="ポーズ")o[k]=pick(F[o.注目部位||"なし"]||F.なし);
    else if(k==="小物")o[k]=fantasy?pick(FANTASY.小物):pick(["スマホ","傘","飲み物","本","バッグ","イヤホン"]);
    else if(k==="非現実要素")o[k]=fantasy?pick(FANTASY.非現実要素):"なし";
-   else if(k==="行動")o[k]=fantasy?pick(FANTASY.行動):(ACTIONS[x[0]]?pick(ACTIONS[x[0]]):pick(GENERIC_ACTIONS));
-   else {o[k]=pick(DB[k]||[]);}
- });
- // 場所を基準に依存項目を整合させる。ただしロック項目は変更しない。
+ }
  x=(DB.場所.find(z=>z[0]===o.場所)||x);
- if(!locks.時間&&!seed.時間&&enabled.時間!==false&&!x[2].includes(o.時間))o.時間=pick(x[2]);
- if(!locks.シチュエーション&&!seed.シチュエーション&&enabled.シチュエーション!==false&&!x[4].includes(o.シチュエーション))o.シチュエーション=pick(x[4]);
+
+ if(enabled.時間!==false){
+   if(seed.時間!=null)o.時間=seed.時間;
+   else if(!(locks.時間&&current?.時間)&&(!x[2].includes(o.時間)))o.時間=pick(x[2]);
+ }
+ if(enabled.シチュエーション!==false){
+   const lockedScene=locks.シチュエーション&&!seed.シチュエーション&&current?.シチュエーション;
+   if(seed.シチュエーション!=null)o.シチュエーション=seed.シチュエーション;
+   else if(lockedScene)o.シチュエーション=lockedScene;
+   else o.シチュエーション=pick(x[4]);
+ }
+
+ // 行動は「場所＋シチュエーション」から選ぶ。行動ロックがある場合は逆向きに整合させる。
+ const localActions=SCENE_ACTIONS[o.場所]?.[o.シチュエーション]||
+   SCENE_ACTIONS_GENERIC[o.シチュエーション]||
+   (ACTIONS[o.場所]||GENERIC_ACTIONS);
+ if(enabled.行動!==false){
+   if(seed.行動!=null)o.行動=seed.行動;
+   else if(locks.行動&&current?.行動)o.行動=current.行動;
+   else {
+     let candidates=localActions;
+     const lockedDistance=locks.距離&&!seed.距離&&current?.距離;
+     if(lockedDistance){
+       const filtered=candidates.filter(a=>actionFitsDistance(a,lockedDistance));
+       if(filtered.length)candidates=filtered;
+     }
+     o.行動=pick(candidates);
+   }
+ }
+
+ // 行動が固定されていてシチュエーションが未固定なら、その行動に合うシチュエーションへ。
+ if(enabled.シチュエーション!==false&&!locks.シチュエーション&&!seed.シチュエーション&&o.行動){
+   const inferred=sceneForAction(o.場所,o.行動,DB);
+   if(inferred)o.シチュエーション=inferred;
+ }
+
  if(!fantasy&&!locks.衣装&&!seed.衣装&&enabled.衣装!==false&&!seasonalClothes(o.季節||season).includes(o.衣装))o.衣装=pick(seasonalClothes(o.季節||season));
- if(!locks.行動&&!seed.行動&&enabled.行動!==false)o.行動=ACTIONS[o.場所]?pick(ACTIONS[o.場所]):pick(fantasy?FANTASY.行動:GENERIC_ACTIONS);
  if(!locks.関係性&&!seed.関係性&&enabled.関係性!==false)o.関係性=rel(o.人数||"1人");
  if(!locks.職業&&!seed.職業&&enabled.職業!==false&&o.年齢==="10代"&&!fantasy)o.職業="学生";
- // 注目部位・ポーズ・距離・アングル・向きの相性。ロック優先で残りを調整する。
+
+ // 注目部位→ポーズ。ここは既存仕様を維持。
  const focus=o.注目部位, poses=F[focus]||F.なし;
  if(enabled.ポーズ!==false&&!locks.ポーズ&&!seed.ポーズ)o.ポーズ=pick(poses);
- if(enabled.距離!==false&&!locks.距離&&!seed.距離){
-   if(/顔|目/.test(focus))o.距離=pick(["バストアップ","腰上"]);
-   else if(/胸元|胸|背中|腰|お腹/.test(focus))o.距離=pick(["バストアップ","腰上","膝上"]);
-   else if(/腿|膝/.test(focus))o.距離=pick(["膝上","全身"]);
-   else if(/鼠径部|脚|足首|足|足先/.test(focus))o.距離=pick(["全身","遠景"]);
+
+ // 距離は「行動」と「注目部位」の両方を満たすものから選ぶ。
+ if(enabled.距離!==false){
+   const focusDs=/顔|目/.test(focus)?["バストアップ","腰上"]:
+     /胸元|胸|背中|腰|お腹/.test(focus)?["バストアップ","腰上","膝上"]:
+     /腿|膝/.test(focus)?["膝上","全身"]:
+     /鼠径部|脚|足首|足|足先/.test(focus)?["全身","遠景"]:
+     ["腰上","膝上","全身"];
+   const actionDs=distancesForAction(o.行動);
+   const allowed=focusDs.filter(d=>actionDs.includes(d));
+   const lockedDistance=locks.距離&&!seed.距離&&current?.距離;
+   if(seed.距離!=null)o.距離=seed.距離;
+   else if(lockedDistance)o.距離=lockedDistance;
+   else o.距離=pick(allowed.length?allowed:actionDs);
  }
+
  if(enabled.向き!==false&&!locks.向き&&!seed.向き&&/背中/.test(focus))o.向き=pick(["斜め後ろ","後ろ姿"]);
  if(enabled.アングル!==false&&!locks.アングル&&!seed.アングル&&/足|脚|腿/.test(focus))o.アングル=pick(["少し見上げる（ローアングル）","目線の高さ"]);
+ if(enabled.アングル!==false&&!o.アングル)o.アングル=pick(DB.アングル||D.アングル);
+ if(enabled.向き!==false&&!o.向き)o.向き=pick(DB.向き||D.向き);
 
  return o;
 }
+
 function render(){result.innerHTML=Object.keys(current||{}).map(k=>`<div class="card"><div class="row"><div class="icon">${I[k]||"✨"}</div><div style="flex:1"><div class="label">${k}</div><div class="value">${esc(current[k])}</div></div>${K.includes(k)?`<button class="lock ${locks[k]?"on":""}" onclick="lock('${k}')">${locks[k]?"🔒":"🔓"}</button>`:""}</div></div>`).join("")}
 function generate(){current=make();render();sync();status.textContent="新しいアイデアを生成しました！"}
 function lock(k){locks[k]=!locks[k];localStorage.ideaLocks=JSON.stringify(locks);render()}
