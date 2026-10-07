@@ -15,6 +15,7 @@ select,input,textarea{width:100%;border:1px solid #ddd7cc;border-radius:11px;pad
 
 <div class="tabs"><button id="tn" class="tab active" onclick="mode('normal')">🎲 通常ガチャ</button><button id="tt" class="tab" onclick="mode('theme')">💭 テーマから</button></div>
 <section class="panel"><div class="small">生成する世界観</div><div class="tabs" style="margin:7px 0 0"><button id="mr" class="tab active" onclick="world('real')">🏙️ 現実系</button><button id="mf" class="tab" onclick="world('fantasy')">🧙 ファンタジー系</button></div><button id="ma" class="secondary" style="width:100%;margin-top:8px" onclick="world('random')">🎲 おまかせ</button></section>
+<section class="panel"><div class="small">🎯 生成の主軸</div><div class="small" style="margin-top:4px">ロックとは別に「ここを中心に一枚の絵を組み立てる」起点を決めます。</div><div class="grid" style="margin-top:8px"><select id="axis"></select><select id="axisValue"></select></div></section>
 <section id="theme" class="panel hidden"><h3>💭 テーマ・感情</h3><textarea id="themeIn" placeholder="例：夏の青春、ちょっと寂しい絵"></textarea><div class="actions" style="margin-top:8px"><button class="secondary" onclick="themeGen()">生成</button><button class="secondary" onclick="themeRandom()">おまかせ</button></div></section>
 
 <section class="panel"><details><summary>⚙️ 詳細設定</summary>
@@ -59,6 +60,66 @@ const GENERIC_ACTIONS=["歩く","立ち止まる","座る","振り返る","手�
 const FANTASY={場所:[["魔法学校の屋上",["春","夏","秋","冬"],["朝","昼","夕方","夜"],["魔法学校の制服","ローブ","私服＋魔導具"],["魔法陣を描く","友人と話す","空を眺める"],[]],["月明かりの森",["春","夏","秋","冬"],["夕方","夜","深夜"],["ローブ","冒険服","私服"],["光る植物を探す","森を歩く","誰かを待つ"],[]],["空中都市の展望台",["春","夏","秋","冬"],["昼","夕方","夜"],["旅装","ドレス","軽装の冒険服"],["空飛ぶ船を見る","街を見下ろす","風に当たる"],[]],["古代遺跡",["春","夏","秋","冬"],["朝","昼","夕方","夜"],["冒険服","ローブ","軽装"],["古代文字を読む","何かを探す","仲間と相談する"],[]],["魔法の湖畔",["春","夏","秋"],["朝","夕方","夜"],["ワンピース","ローブ","私服"],["水面を覗く","光る魚を見る","湖を眺める"],[]]],
 時間:["朝","昼","夕方","夜","深夜"],季節:["春","夏","秋","冬"],衣装:["魔法学校の制服","ローブ","冒険服","軽装の冒険服","旅装","ドレス","私服＋魔導具"],表情:["楽しそう","少し寂しげ","照れた笑顔","驚いている","真剣な表情","穏やかな笑顔","不安そう"],シチュエーション:["誰かを待っている","仲間と話している","一人で物思いにふけっている","何かを探している","偶然誰かと出会う","未知の場所を訪れる","景色を眺めている"],行動:["魔法を使う","魔導具を調べる","光るものに触れる","空飛ぶ乗り物に乗る","剣を構える","仲間と相談する","古代文字を読む"],距離:["バストアップ","腰上","膝上","全身","遠景"],アングル:["目線の高さ","少し見上げる（ローアングル）","少し見下ろす（ハイアングル）","かなり低い位置","かなり高い位置"],向き:["正面","斜め前","横","斜め後ろ","後ろ姿"],小物:["魔法の杖","魔導書","光る石","古い鍵","薬瓶","地図","羽根ペン"],非現実要素:["小さな光の粒が漂っている","空に巨大な月が二つある","時間が止まったように雨粒が空中で静止している","植物が淡く光っている","遠くに空飛ぶ乗り物が見える","鏡の中だけ別の景色が映っている","重力が少し弱く髪や小物が浮いている","古い時計から星空がこぼれている"]};
 const FANTASY_REL=["一人","友人","親友","恋人","仲間","師弟","ライバル","初対面"];
+
+/* 主軸生成：主軸→関連項目→補助項目の順で一枚を組み立てる */
+const SCENE_ACTIONS={
+ "海辺":{
+  "海を眺める":["海を眺めながら立つ","水平線を指さす","髪を押さえながら海を見る"],
+  "散歩する":["波打ち際を歩く","貝殻を拾いながら歩く","砂浜をゆっくり歩く"],
+  "夕日を見る":["夕日を見上げる","海を見ながら立ち止まる","沈む夕日に手をかざす"]},
+ "学校の屋上":{
+  "友人と話す":["友人と向き合って話す","笑いながら話す","飲み物を片手に話す"],
+  "一人で空を眺める":["空を見上げる","フェンスにもたれて空を見る","雲を目で追う"],
+  "風に当たる":["風に吹かれながら立つ","髪を押さえる","制服の裾を押さえる"]},
+ "雨上がりの商店街":{
+  "誰かを待つ":["スマホを確認しながら待つ","通りの向こうを見る","時計を気にする"],
+  "店を眺める":["ショーウィンドウを見る","店先で立ち止まる","商品を覗き込む"],
+  "傘を閉じる":["傘をたたむ","濡れた髪を整える","水滴を払う"]},
+ "古い神社":{
+  "参拝する":["お賽銭を入れる","手を合わせる","鈴を鳴らしてお参りする"],
+  "境内を歩く":["落ち葉を踏みながら歩く","鳥居を振り返りながら歩く","ゆっくり境内を歩く"],
+  "何かを探す":["足元を覗き込む","周囲を見回す","落ちているものを探す"]},
+ "駅のホーム":{
+  "電車を待つ":["時刻表を確認する","スマホを見ながら待つ","線路の先を見る"],
+  "誰かを見送る":["手を振って見送る","発車する電車を目で追う","ホームから手を振る"],
+  "偶然再会する":["驚いて振り返る","相手に手を振る","立ち止まって話す"]}
+};
+const FANTASY_SCENES={
+ "魔法学校の屋上":{"魔法を学ぶ":["魔法陣を描く","魔導書を開く","杖を掲げる"],"友人と話す":["友人と魔法について話す","魔導具を見せ合う"],"空を眺める":["空飛ぶ船を見上げる","星を眺める"]},
+ "月明かりの森":{"光る植物を探す":["光る植物に触れる","足元を照らしながら探す"],"森を歩く":["光る道を歩く","木々の間を進む"],"誰かを待つ":["遠くを見ながら待つ","月明かりの中で立つ"]},
+ "空中都市の展望台":{"空飛ぶ船を見る":["空飛ぶ船を指さす","船を見上げる"],"街を見下ろす":["街を見下ろす","欄干から下を見る"],"風に当たる":["風に髪をなびかせる","空を見上げる"]},
+ "古代遺跡":{"古代文字を読む":["石碑を覗き込む","古代文字を指でなぞる"],"何かを探す":["遺跡の奥を探す","足元を調べる"],"仲間と相談する":["地図を広げて相談する","仲間と遺跡を指さす"]},
+ "魔法の湖畔":{"水面を覗く":["水面を覗き込む","水面に手を伸ばす"],"光る魚を見る":["光る魚を目で追う","湖面を指さす"],"湖を眺める":["湖を眺めながら立つ","湖畔に座る"]}
+};
+const ACTION_DISTANCE={
+ "お賽銭を入れる":["腰上","膝上"],"手を合わせる":["バストアップ","腰上"],"鈴を鳴らしてお参りする":["腰上","膝上"],
+ "落ち葉を踏みながら歩く":["全身","膝上","遠景"],"鳥居を振り返りながら歩く":["全身","膝上"],"ゆっくり境内を歩く":["全身","膝上","遠景"],
+ "足元を覗き込む":["全身","膝上"],"周囲を見回す":["腰上","膝上","全身"],"落ちているものを探す":["全身","膝上"],
+ "波打ち際を歩く":["全身","膝上","遠景"],"貝殻を拾いながら歩く":["全身","膝上"],"砂浜をゆっくり歩く":["全身","遠景"],
+ "海を眺めながら立つ":["全身","膝上","腰上"],"夕日を見上げる":["腰上","膝上","全身"],
+ "傘をたたむ":["腰上","膝上"],"濡れた髪を整える":["バストアップ","腰上"],"ショーウィンドウを見る":["腰上","膝上","全身"],
+ "時刻表を確認する":["バストアップ","腰上"],"スマホを見ながら待つ":["バストアップ","腰上"],"手を振って見送る":["腰上","膝上","全身"],
+ "驚いて振り返る":["腰上","膝上","全身"],"立ち止まって話す":["腰上","膝上"],
+ "プレゼントを渡す":["腰上","膝上"],"イルミネーションを見る":["腰上","膝上","全身"],"花火を見る":["腰上","膝上","全身"],
+ "かき氷を食べる":["バストアップ","腰上"],"屋台を見る":["腰上","膝上","全身"]
+};
+const FOCUS_DIR={
+ "顔":["正面","斜め前","横"],"目":["正面","斜め前","横"],"髪":["正面","斜め前","横","斜め後ろ"],"手":["正面","斜め前","横"],
+ "胸元":["正面","斜め前","横"],"胸":["正面","斜め前","横"],"背中":["斜め後ろ","後ろ姿"],"腰":["正面","斜め前","横","斜め後ろ"],"お腹":["正面","斜め前","横"],
+ "鼠径部":["正面","斜め前","横"],"腿":["正面","斜め前","横"],"膝":["正面","斜め前","横"],"脚":["正面","斜め前","横","斜め後ろ"],"足首":["正面","斜め前","横","斜め後ろ"],"足":["正面","斜め前","横","斜め後ろ"],"足先":["正面","斜め前","横","斜め後ろ"]
+};
+const AXIS_VALUES={場所:()=> (worldMode==="fantasy"?FANTASY:D).場所.map(x=>x[0]),シチュエーション:()=> (worldMode==="fantasy"?FANTASY:D).シチュエーション,行動:()=>worldMode==="fantasy"?FANTASY.行動:[...new Set(Object.values(ACTIONS).flat())],注目部位:()=>Object.keys(F).filter(x=>x!=="なし"),衣装:()=>worldMode==="fantasy"?FANTASY.衣装:D.衣装,人物:()=>PEOPLE.人数,イベント:()=>Object.keys(E),テーマ:()=>THEME_BUNDLES.flatMap(x=>x.keys).filter((x,i,a)=>a.indexOf(x)===i)};
+function sceneActions(place,scene){let m=worldMode==="fantasy"?FANTASY_SCENES:SCENE_ACTIONS;return (m[place]&&m[place][scene])||((worldMode==="fantasy"?FANTASY.行動:GENERIC_ACTIONS));}
+function sceneList(place){let db=worldMode==="fantasy"?FANTASY:D,x=db.場所.find(z=>z[0]===place);return x?x[4]:db.シチュエーション}
+function distanceForAction(action,focus){if(ACTION_DISTANCE[action])return ACTION_DISTANCE[action];if(/顔|目/.test(focus))return ["バストアップ","腰上"];if(/胸元|胸|背中|腰|お腹/.test(focus))return ["バストアップ","腰上","膝上"];if(/腿|膝/.test(focus))return ["膝上","全身"];if(/鼠径部|脚|足首|足|足先/.test(focus))return ["全身","遠景"];return ["腰上","膝上","全身"]}
+function actionsForDistance(actions,distance){return actions.filter(a=>distanceForAction(a,"なし").includes(distance))}
+function themeSeed(text){let s=text||"",o={},h=[];if(/クリスマス|聖夜/.test(s)){o.イベント="クリスマス";h=["イルミネーション","プレゼント","ツリー","ケーキ","雪"]}else if(/夏祭り/.test(s)){o.イベント="夏祭り";h=["屋台","提灯","うちわ","浴衣"]}else if(/花火/.test(s)){o.イベント="花火大会";h=["花火","屋台","うちわ"]}else if(/花見|桜/.test(s)){o.イベント="花見";h=["桜","お弁当","レジャーシート"]}else if(/文化祭/.test(s)){o.イベント="文化祭";h=["模擬店","ポスター","ステージ"]}else if(/ハロウィン/.test(s)){o.イベント="ハロウィン";h=["お菓子","かぼちゃ","ランタン"]}else if(/お正月|初詣/.test(s)){o.イベント="お正月";h=["門松","おみくじ","鏡餅"]}else if(/バレンタイン/.test(s)){o.イベント="バレンタイン";h=["チョコレート","ラッピング","紙袋"]}else if(/卒業/.test(s)){o.イベント="卒業式";h=["卒業証書","花束","黒板"]}
+ if(/春|桜|花見|卒業/.test(s))o.季節="春";if(/夏|海|祭|花火/.test(s))o.季節="夏";if(/秋|紅葉|月見|ハロウィン|文化祭/.test(s))o.季節="秋";if(/冬|雪|クリスマス|お正月|バレンタイン/.test(s))o.季節="冬";
+ if(/海/.test(s))o.場所="海辺";if(/学校|青春/.test(s))o.場所="学校の屋上";if(/駅/.test(s))o.場所="駅のホーム";if(/神社|初詣/.test(s))o.場所="古い神社";if(/雨|商店街/.test(s))o.場所="雨上がりの商店街";
+ if(/寂しい|孤独|切ない/.test(s))o.表情="少し寂しげ";if(/楽しい|明るい/.test(s))o.表情="楽しそう";if(/不安|怖い/.test(s))o.表情="不安そう";
+ if(/一人|孤独/.test(s))o.人数="1人";if(/二人|2人|二人きり/.test(s))o.人数="2人";return {seed:o,hints:h};}
+function axisState(){return {axis:document.getElementById("axis")?.value||"おまかせ",value:document.getElementById("axisValue")?.value||""}}
+
 let worldMode=localStorage.ideaWorld||"real";
 const p=()=>D.場所[Math.floor(Math.random()*D.場所.length)], pick=a=>a[Math.floor(Math.random()*a.length)], esc=s=>String(s).replace(/[&<>"]+/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[x]));
 const SEASON_CLOTHES={春:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","和装","スポーティーな服"],夏:["制服","私服","ワンピース","パーカー＋スカート","和装","スポーティーな服","水着"],秋:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","コート＋マフラー","和装","スポーティーな服"],冬:["制服＋カーディガン","私服","ワンピース","コート＋マフラー","和装"]};
@@ -66,189 +127,46 @@ const CUSTOM_WORDS=()=>custom.flatMap(x=>[x.word,...x.related].filter(Boolean));
 function customCandidates(k,season){return custom.filter(x=>x.category===k).flatMap(x=>[x.word,...x.related]).filter(Boolean)}
 function seasonalClothes(season){return SEASON_CLOTHES[season]||D.衣装}
 function compatible(k,v,x){let i={季節:1,時間:2,衣装:3,シチュエーション:4,構図:5}[k];return !i||x[i].includes(v)}
-const SCENE_ACTIONS={
-"海辺":{
- "海を眺める":["海を眺めながら立つ","水平線を見つめる","波の音に耳を澄ます"],
- "散歩する":["波打ち際を歩く","砂浜をゆっくり歩く","貝殻を拾いながら歩く"],
- "夕日を見る":["夕日に目を細める","海を見ながら立つ","沈む夕日を指さす"]
-},
-"学校の屋上":{
- "友人と話す":["友人と話す","飲み物を片手に話す","笑いながら振り向く"],
- "一人で空を眺める":["空を見上げる","フェンスにもたれて空を見る","流れる雲を目で追う"],
- "風に当たる":["風に髪を押さえる","フェンスのそばで風を感じる","制服の裾を押さえる"]
-},
-"雨上がりの商店街":{
- "誰かを待つ":["店先で立ち止まる","スマホを確認しながら待つ","通りの先を見る"],
- "店を眺める":["ショーウィンドウを見る","店先の商品を眺める","看板を見上げる"],
- "傘を閉じる":["傘を閉じる","傘の水滴を払う","濡れた髪を整える"]
-},
-"古い神社":{
- "参拝する":["お賽銭を入れる","手を合わせる","鈴を鳴らしてお参りする"],
- "境内を歩く":["ゆっくり歩く","落ち葉を踏みながら歩く","振り返りながら歩く"],
- "何かを探す":["周囲を見回す","足元を覗き込む","落ちているものを探す"]
-},
-"駅のホーム":{
- "電車を待つ":["電車を待つ","時刻表を確認する","ホームの先を見る"],
- "誰かを見送る":["手を振って見送る","遠ざかる電車を見る","小さく手を振る"],
- "偶然再会する":["驚いて振り返る","相手に手を振る","話しかけようと近づく"]
-},
-"魔法学校の屋上":{
- "魔法陣を描く":["足元に魔法陣を描く","しゃがんで魔法陣を調べる","描いた魔法陣を見つめる"],
- "友人と話す":["友人と話す","魔導具を見せながら話す","笑いながら振り向く"],
- "空を眺める":["空を見上げる","空飛ぶものを目で追う","風に当たりながら空を見る"]
-},
-"月明かりの森":{
- "光る植物を探す":["光る植物を覗き込む","しゃがんで足元を探す","木々の間を見回す"],
- "森を歩く":["森の小道を歩く","木の根を避けながら歩く","振り返りながら歩く"],
- "誰かを待つ":["森の奥を見つめて待つ","木のそばで立ち止まる","周囲を見回す"]
-},
-"空中都市の展望台":{
- "空飛ぶ船を見る":["空飛ぶ船を見上げる","遠くの船を指さす","街並みを眺める"],
- "街を見下ろす":["手すりから街を見下ろす","眼下の景色を眺める","遠くの建物を指さす"],
- "風に当たる":["風で髪を押さえる","手すりのそばで風を感じる","衣装の裾を押さえる"]
-},
-"古代遺跡":{
- "古代文字を読む":["壁の文字を指で追う","石碑を覗き込む","古代文字を読み解く"],
- "何かを探す":["周囲を見回す","床の模様を調べる","落ちているものを探す"],
- "仲間と相談する":["仲間と地図を広げる","指さしながら相談する","仲間の話を聞く"]
-},
-"魔法の湖畔":{
- "水面を覗く":["水面を覗き込む","湖面に手を伸ばす","しゃがんで水面を見る"],
- "光る魚を見る":["光る魚を目で追う","水面を覗き込む","魚に手を伸ばす"],
- "湖を眺める":["湖を眺めながら立つ","水面を見つめる","湖畔で静かに佇む"]
-}
-};
-
-const SCENE_ACTIONS_GENERIC={
-"誰かを待っている":["通りの先を見る","スマホを確認しながら待つ","その場で立ち止まる"],
-"友人と話している":["友人と話す","笑いながら振り向く","相手の話を聞く"],
-"一人で物思いにふけっている":["遠くを見つめる","静かに立ち止まる","考えながら歩く"],
-"何かを探している":["周囲を見回す","足元を覗き込む","落ちているものを探す"],
-"偶然誰かと出会う":["驚いて振り返る","相手に手を振る","話しかけようと近づく"],
-"帰るところ":["歩きながら振り返る","帰る方向へ歩く","荷物を持ち直す"],
-"景色を眺めている":["景色を眺めながら立つ","遠くを見つめる","ゆっくり振り返る"],
-"仲間と話している":["仲間と相談する","地図を広げて話す","相手の話を聞く"],
-"未知の場所を訪れる":["周囲を見回す","慎重に歩く","目の前のものを調べる"]
-};
-
-const ACTION_DISTANCE_RULES=[
- [/靴|足元|足先|波打ち際|歩く|走る|階段|しゃがむ|座る|脚|落ち葉を踏む/ ,["膝上","全身","遠景"]],
- [/お賽銭|手を合わせる|鈴を鳴らす|手を振る|スマホ|話す|相談|地図|飲み物|髪|顔|表情|文字|読む|見る|見つめる|眺める|覗き込む/ ,["バストアップ","腰上","膝上"]],
- [/見上げる|空を/ ,["腰上","膝上","全身"]],
-];
-
-function actionFitsDistance(action,distance){
- if(!action||!distance)return true;
- return ACTION_DISTANCE_RULES.some(([re,ds])=>re.test(action)&&ds.includes(distance)) ||
-   (!/靴|足元|足先|波打ち際|歩く|走る|階段|しゃがむ|座る|脚|落ち葉を踏む/.test(action) || distance!=="バストアップ");
-}
-function distancesForAction(action){
- if(/靴|足元|足先|波打ち際|歩く|走る|階段|しゃがむ|座る|脚|落ち葉を踏む/.test(action))return["膝上","全身","遠景"];
- if(/見上げる|空を/.test(action))return["腰上","膝上","全身"];
- if(/お賽銭|手を合わせる|鈴を鳴らす|手を振る|スマホ|話す|相談|地図|飲み物|髪|文字|読む|見つめる|眺める|覗き込む/.test(action))return["バストアップ","腰上","膝上"];
- return["腰上","膝上","全身"];
-}
-function sceneForAction(place,action,db){
- const local=SCENE_ACTIONS[place]||{};
- for(const [scene,acts] of Object.entries(local))if(acts.includes(action))return scene;
- for(const [scene,acts] of Object.entries(SCENE_ACTIONS_GENERIC))if(acts.includes(action))return scene;
- const row=db.場所.find(z=>z[0]===place);
- return row?.[4]?.[0]||"景色を眺めている";
-}
-
 function make(seed={}){
- const fantasy=worldMode==="fantasy";
- const DB=fantasy?FANTASY:D;
- let x=(seed.場所&&DB.場所.find(z=>z[0]===seed.場所))||pick(DB.場所);
- let o={};
+ const fantasy=worldMode==="fantasy",DB=fantasy?FANTASY:D, ax=axisState(); let o={};
+ let axis=seed.__axis||ax.axis, axisValue=seed.__axisValue||ax.value;
+ if(axis==="おまかせ"){axis=pick(["場所","シチュエーション","行動","注目部位","衣装","イベント"]);axisValue=axis==="イベント"?pick(Object.keys(E)):pick(AXIS_VALUES[axis]?AXIS_VALUES[axis]():[])}
+ if(axis==="テーマ"&&themeIn?.value.trim())Object.assign(seed,themeSeed(themeIn.value.trim()).seed);
+ if(axis==="イベント"&&axisValue&&E[axisValue])seed={...seed,イベント:axisValue};
+ if(seed.イベント&&E[seed.イベント]){let d=E[seed.イベント];seed={...seed,季節:seed.季節||d[0],衣装:seed.衣装||d[2],小物:seed.小物||pick(d[3])};if(!seed.場所&&DB.場所.some(x=>x[0]===d[1]))seed.場所=d[1];}
+ if(axis==="場所"&&axisValue)seed.場所=axisValue;
+ if(axis==="シチュエーション"&&axisValue)seed.シチュエーション=axisValue;
+ if(axis==="行動"&&axisValue)seed.行動=axisValue;
+ if(axis==="注目部位"&&axisValue)seed.注目部位=axisValue;
+ if(axis==="衣装"&&axisValue)seed.衣装=axisValue;
+ if(axis==="人物"&&axisValue)seed.人数=axisValue;
+ let x=(seed.場所&&DB.場所.find(z=>z[0]===seed.場所))||pick(DB.場所), place=x[0];
  const season=seed.季節||((locks.季節&&current?.季節)?current.季節:null)||pick(x[1]);
- const rel=n=>n==="1人"?"一人":n==="2人"?pick(fantasy?FANTASY_REL.slice(1):["友人","親友","恋人","兄弟・姉妹","同僚","初対面"]):pick(fantasy?["仲間とライバルが混在","仲間たち","冒険者の一行","魔法使いの集まり"]:["友人グループ","同僚たち","家族","クラスメイト"]);
-
- // 基本情報を先に決める。シチュエーション→行動→距離の順で依存関係を作る。
- for(const k of ["性別","年齢","職業","人数","関係性","場所","時間","季節","衣装","表情","注目部位","小物","非現実要素"]){
-   if(enabled[k]===false)continue;
-   if(seed[k]!=null){o[k]=seed[k];continue}
-   if(locks[k]&&current?.[k]!=null){o[k]=current[k];continue}
-   if(k==="性別")o[k]=pick(PEOPLE.性別);
-   else if(k==="年齢")o[k]=pick(PEOPLE.年齢);
-   else if(k==="人数")o[k]=pick(PEOPLE.人数);
-   else if(k==="関係性")o[k]=rel(o.人数||"1人");
-   else if(k==="場所")o[k]=x[0];
-   else if(k==="季節")o[k]=season;
-   else if(k==="衣装")o[k]=fantasy?pick(FANTASY.衣装):pick(seasonalClothes(season));
-   else if(k==="職業")o[k]=fantasy?pick(["魔法使い","冒険者","騎士","錬金術師","研究者"]):((o.年齢==="10代")?"学生":pick(["会社員","教師","医師","店員","公務員","フリーランス","アーティスト"]));
-   else if(k==="注目部位")o[k]=pick(Object.keys(F).filter(z=>z!=="なし"));
-   else if(k==="小物")o[k]=fantasy?pick(FANTASY.小物):pick(["スマホ","傘","飲み物","本","バッグ","イヤホン"]);
-   else if(k==="非現実要素")o[k]=fantasy?pick(FANTASY.非現実要素):"なし";
- }
- x=(DB.場所.find(z=>z[0]===o.場所)||x);
-
- if(enabled.時間!==false){
-   if(seed.時間!=null)o.時間=seed.時間;
-   else if(!(locks.時間&&current?.時間)&&(!x[2].includes(o.時間)))o.時間=pick(x[2]);
- }
- if(enabled.シチュエーション!==false){
-   const lockedScene=locks.シチュエーション&&!seed.シチュエーション&&current?.シチュエーション;
-   if(seed.シチュエーション!=null)o.シチュエーション=seed.シチュエーション;
-   else if(lockedScene)o.シチュエーション=lockedScene;
-   else o.シチュエーション=pick(x[4]);
- }
-
- // 行動は「場所＋シチュエーション」から選ぶ。行動ロックがある場合は逆向きに整合させる。
- const localActions=SCENE_ACTIONS[o.場所]?.[o.シチュエーション]||
-   SCENE_ACTIONS_GENERIC[o.シチュエーション]||
-   (ACTIONS[o.場所]||GENERIC_ACTIONS);
- if(enabled.行動!==false){
-   if(seed.行動!=null)o.行動=seed.行動;
-   else if(locks.行動&&current?.行動)o.行動=current.行動;
-   else {
-     let candidates=localActions;
-     const lockedDistance=locks.距離&&!seed.距離&&current?.距離;
-     if(lockedDistance){
-       const filtered=candidates.filter(a=>actionFitsDistance(a,lockedDistance));
-       if(filtered.length)candidates=filtered;
-     }
-     o.行動=pick(candidates);
-   }
- }
-
- // 行動が固定されていてシチュエーションが未固定なら、その行動に合うシチュエーションへ。
- if(enabled.シチュエーション!==false&&!locks.シチュエーション&&!seed.シチュエーション&&o.行動){
-   const inferred=sceneForAction(o.場所,o.行動,DB);
-   if(inferred)o.シチュエーション=inferred;
- }
-
- if(!fantasy&&!locks.衣装&&!seed.衣装&&enabled.衣装!==false&&!seasonalClothes(o.季節||season).includes(o.衣装))o.衣装=pick(seasonalClothes(o.季節||season));
- if(!locks.関係性&&!seed.関係性&&enabled.関係性!==false)o.関係性=rel(o.人数||"1人");
- if(!locks.職業&&!seed.職業&&enabled.職業!==false&&o.年齢==="10代"&&!fantasy)o.職業="学生";
-
- // 注目部位→ポーズ。ここは既存仕様を維持。
- const focus=o.注目部位, poses=F[focus]||F.なし;
- if(enabled.ポーズ!==false&&!locks.ポーズ&&!seed.ポーズ)o.ポーズ=pick(poses);
-
- // 距離は「行動」と「注目部位」の両方を満たすものから選ぶ。
- if(enabled.距離!==false){
-   const focusDs=/顔|目/.test(focus)?["バストアップ","腰上"]:
-     /胸元|胸|背中|腰|お腹/.test(focus)?["バストアップ","腰上","膝上"]:
-     /腿|膝/.test(focus)?["膝上","全身"]:
-     /鼠径部|脚|足首|足|足先/.test(focus)?["全身","遠景"]:
-     ["腰上","膝上","全身"];
-   const actionDs=distancesForAction(o.行動);
-   const allowed=focusDs.filter(d=>actionDs.includes(d));
-   const lockedDistance=locks.距離&&!seed.距離&&current?.距離;
-   if(seed.距離!=null)o.距離=seed.距離;
-   else if(lockedDistance)o.距離=lockedDistance;
-   else o.距離=pick(allowed.length?allowed:actionDs);
- }
-
- if(enabled.向き!==false&&!locks.向き&&!seed.向き&&/背中/.test(focus))o.向き=pick(["斜め後ろ","後ろ姿"]);
- if(enabled.アングル!==false&&!locks.アングル&&!seed.アングル&&/足|脚|腿/.test(focus))o.アングル=pick(["少し見上げる（ローアングル）","目線の高さ"]);
- if(enabled.アングル!==false&&!o.アングル)o.アングル=pick(DB.アングル||D.アングル);
- if(enabled.向き!==false&&!o.向き)o.向き=pick(DB.向き||D.向き);
-
+ const rel=n=>n==="1人"?"一人":n==="2人"?pick(fantasy?FANTASY_REL.slice(1):["友人","親友","恋人","兄弟・姉妹","同僚","初対面"]):pick(fantasy?["仲間たち","冒険者の一行","魔法使いの集まり"]:["友人グループ","同僚たち","家族","クラスメイト"]);
+ const choose=(k,fn)=>{if(enabled[k]===false)return;if(seed[k]!=null){o[k]=seed[k];return}if(locks[k]&&current?.[k]!=null){o[k]=current[k];return}o[k]=fn()};
+ choose("性別",()=>pick(PEOPLE.性別));choose("年齢",()=>pick(PEOPLE.年齢));choose("人数",()=>pick(PEOPLE.人数));choose("関係性",()=>rel(o.人数||"1人"));choose("場所",()=>place);choose("季節",()=>season);
+ choose("時間",()=>pick(x[2]));choose("衣装",()=>fantasy?pick(FANTASY.衣装):pick(seasonalClothes(season)));
+ choose("職業",()=>fantasy?pick(["魔法使い","冒険者","騎士","錬金術師","研究者"]):(o.年齢==="10代"?"学生":pick(["会社員","教師","医師","店員","公務員","フリーランス","アーティスト"])));
+ let scenes=sceneList(place); if(!locks.シチュエーション&&!seed.シチュエーション&&axis!=="シチュエーション"){if(seed.イベント&&E[seed.イベント])scenes=[pick(E[seed.イベント][4])];else if(axis==="イベント"&&E[axisValue])scenes=E[axisValue][4].map(v=>sceneList(place).includes(v)?v:sceneList(place)[0]);}
+ choose("シチュエーション",()=>pick(scenes));
+ let acts=sceneActions(place,o.シチュエーション);
+ if(seed.行動==null&&!locks.行動&&enabled.行動!==false&&locks.距離&&current?.距離){let a=actionsForDistance(acts,current.距離);if(a.length)acts=a}
+ choose("行動",()=>pick(acts));
+ choose("注目部位",()=>pick(Object.keys(F).filter(z=>z!=="なし")));
+ let distPool=distanceForAction(o.行動,o.注目部位||"なし");
+ if(enabled.距離!==false&&!locks.距離&&!seed.距離)o.距離=pick(distPool);
+ else if(enabled.距離!==false&&!o.距離&&current?.距離)o.距離=current.距離;
+ if(enabled.アングル!==false&&!locks.アングル&&!seed.アングル){o.アングル=pick(/足|脚|腿/.test(o.注目部位)?["少し見上げる（ローアングル）","目線の高さ"]:["目線の高さ","少し見上げる（ローアングル）","少し見下ろす（ハイアングル）"])}
+ if(enabled.向き!==false&&!locks.向き&&!seed.向き){let dirs=FOCUS_DIR[o.注目部位]||["正面","斜め前","横"];o.向き=pick(dirs)}
+ choose("ポーズ",()=>pick(F[o.注目部位||"なし"]||F.なし));
+ choose("表情",()=>pick(DB.表情));
+ choose("小物",()=>seed.小物|| (fantasy?pick(FANTASY.小物):pick(["スマホ","傘","飲み物","本","バッグ","イヤホン"])));
+ choose("非現実要素",()=>fantasy?pick(FANTASY.非現実要素):"なし");
+ if(seed.イベント)o.イベント=seed.イベント;if(seed.テーマ)o.テーマ=seed.テーマ;if(seed.テーマ補足)o.テーマ補足=seed.テーマ補足;
+ // 主軸を優先しつつ、イベントの小物・行動を自然に反映
+ if(axis==="イベント"&&E[axisValue]){o.イベント=axisValue;o.小物=seed.小物||pick(E[axisValue][3]);let ea=E[axisValue][4];if(!locks.行動&&!seed.行動&&ea.length){let aa=ea.filter(a=>!locks.距離||!current?.距離||distanceForAction(a,o.注目部位).includes(current.距離));if(aa.length)o.行動=pick(aa)}}
  return o;
 }
-
 function render(){result.innerHTML=Object.keys(current||{}).map(k=>`<div class="card"><div class="row"><div class="icon">${I[k]||"✨"}</div><div style="flex:1"><div class="label">${k}</div><div class="value">${esc(current[k])}</div></div>${K.includes(k)?`<button class="lock ${locks[k]?"on":""}" onclick="lock('${k}')">${locks[k]?"🔒":"🔓"}</button>`:""}</div></div>`).join("")}
 function generate(){current=make();render();sync();status.textContent="新しいアイデアを生成しました！"}
 function lock(k){locks[k]=!locks[k];localStorage.ideaLocks=JSON.stringify(locks);render()}
@@ -257,7 +175,22 @@ function copy(){navigator.clipboard?.writeText(Object.keys(current).map(k=>(I[k]
 function save(){let a=JSON.parse(localStorage.drawingIdeas||"[]");a.unshift(current);localStorage.drawingIdeas=JSON.stringify(a.slice(0,30));saved()}
 function saved(){let a=JSON.parse(localStorage.drawingIdeas||"[]");document.getElementById("saved").innerHTML=a.length?a.map((x,i)=>`<div class="card"><b>${esc(x.場所||"")}</b>・${esc(x.季節||"")}・${esc(x.時間||"")}<div class="small">${esc(x.衣装||"")}／${esc(x.シチュエーション||"")}</div><button class="danger" onclick="del(${i})">削除</button></div>`).join(""):"まだありません。"}
 function del(i){let a=JSON.parse(localStorage.drawingIdeas||"[]");a.splice(i,1);localStorage.drawingIdeas=JSON.stringify(a);saved()}
+function setupAxis(){
+ const a=document.getElementById("axis"),v=document.getElementById("axisValue");if(!a||!v)return;
+ const axes=["おまかせ","場所","シチュエーション","行動","注目部位","衣装","人物","イベント","テーマ"];
+ a.innerHTML=axes.map(x=>`<option>${x}</option>`).join("");
+ a.onchange=()=>{axisValues();if(a.value==="テーマ")status.textContent="テーマ欄の入力を主軸にします。"};
+ axisValues();
+}
+function axisValues(){
+ const a=document.getElementById("axis"),v=document.getElementById("axisValue");if(!a||!v)return;let k=a.value;
+ if(k==="テーマ"){v.innerHTML='<option>テーマ欄を使用</option>';v.disabled=true;return}
+ v.disabled=false;
+ if(k==="おまかせ"){v.innerHTML='<option>ランダムに決める</option>';return}
+ let vals=AXIS_VALUES[k]?AXIS_VALUES[k]():[];v.innerHTML=vals.map(x=>`<option>${esc(x)}</option>`).join("");
+}
 function setup(){
+ setupAxis();
  const checksEl=document.getElementById("checks"), focusEl=document.getElementById("focus"), eventEl=document.getElementById("event"), ccEl=document.getElementById("cc");
  checksEl.innerHTML=K.map(k=>`<label class="check"><input type="checkbox" ${enabled[k]!==false?"checked":""} onchange="en('${k}',this.checked)"> ${I[k]} ${k}</label>`).join("");
  focusEl.innerHTML=Object.keys(F).map(k=>`<option>${k}</option>`).join("");
@@ -281,24 +214,12 @@ const THEME_BUNDLES=[
  {keys:["不安","怖い"],o:{場所:"古い神社",時間:"夜",季節:"冬",衣装:"コート＋マフラー",表情:"不安そう",シチュエーション:"何かを探している",距離:"全身",アングル:"少し見下ろす（ハイアングル）",向き:"斜め後ろ"},extra:["遠くの灯り","足音","古い看板"]}
 ];
 function themeGen(){
- const s=themeIn.value.trim();
- if(/魔法|異世界|妖精|ドラゴン|魔王|冒険|魔導|ファンタジー/.test(s))worldMode="fantasy"; if(!s){status.textContent="テーマを入力してね。";return}
- const hits=THEME_BUNDLES.filter(b=>b.keys.some(k=>s.includes(k)));
- let o={}; if(hits.length){hits.forEach(b=>Object.assign(o,b.o))} else {
-   if(/春|桜|花見/.test(s))o={季節:"春"};
-   if(/夏|海|祭|花火/.test(s))o={季節:"夏"};
-   if(/秋|紅葉|月見/.test(s))o={季節:"秋"};
-   if(/冬|雪|クリスマス/.test(s))o={季節:"冬"};
-   if(/学校|青春/.test(s))o.場所="学校の屋上";
-   if(/駅/.test(s))o.場所="駅のホーム";
-   if(/海/.test(s))o.場所="海辺";
-   if(/雨/.test(s))o.場所="雨上がりの商店街";
- }
- // 明示された条件を最後に優先
- if(/春/.test(s))o.季節="春"; if(/夏/.test(s))o.季節="夏"; if(/秋/.test(s))o.季節="秋"; if(/冬/.test(s))o.季節="冬";
- if(/雨/.test(s))o.天候="雨";
- if(/一人|孤独|寂しい/.test(s))o.シチュエーション="一人で物思いにふけっている";
- current=make(o); current.テーマ=s; current.テーマ補足=hits.flatMap(b=>b.extra).slice(0,3).join("／"); render(); sync(); status.textContent="テーマを中心に生成しました！"
+ const s=themeIn.value.trim();if(!s){status.textContent="テーマを入力してね。";return}
+ const t=themeSeed(s), hits=THEME_BUNDLES.filter(b=>b.keys.some(k=>s.includes(k)));let o={...t.seed};
+ if(/魔法|異世界|妖精|ドラゴン|魔王|冒険|魔導|ファンタジー/.test(s))worldMode="fantasy";
+ if(!o.イベント&&hits.length){let b=hits[0];Object.assign(o,b.o);o.テーマ補足=b.extra.join("／")}
+ o.テーマ=s; if(!o.テーマ補足)o.テーマ補足=t.hints.join("／");
+ current=make({...o,__axis:"テーマ",__axisValue:s});render();sync();status.textContent="「"+s+"」を主軸に生成しました！";
 }
 function themeRandom(){themeIn.value=pick(["ちょっと寂しい絵","夏の青春","雨の日に一人で帰る感じ","明るくて楽しい絵","ちょっと不安になる雰囲気"]);themeGen()}
 
@@ -306,7 +227,9 @@ const T=["風で髪や服が少し揺れる瞬間にする","遠くに誰かの�
 function extra(){let z=document.getElementById("extra");if(z)z.remove();let ks=["もう一捻り","異物","少し前","少し後"].filter(k=>current[k]);if(!ks.length)return;z=document.createElement("div");z.id="extra";z.className="panel";z.innerHTML="<b>✨ 追加アイデア</b>"+ks.map(k=>`<div class="story"><b>${k}</b><br>${esc(current[k])}</div>`).join("");result.after(z)}
 function twist(){current["もう一捻り"]=pick(T);extra()}function odd(){current["異物"]=pick(O);extra()}function story(){current["少し前"]=pick(["学校や家を出てここへ向かった","誰かと話したあと一人になった","何かを探しながら来た"]);current["少し後"]=pick(["少しして誰かが現れる","そのまま帰る","思いがけない出来事が起こる"]);extra()}
 function related(){let q=relIn.value.trim(),a=R[q]||[];custom.filter(x=>x.word==q).forEach(x=>a=a.concat(x.related));relOut.innerHTML=a.length?a.map(x=>`<span class="tag">${esc(x)}</span>`).join(""):"<div class='small'>未登録です。マイデータから追加できます。</div>"}
-function eventGen(){const ev=document.getElementById("event").value,d=E[ev],o={季節:d[0],衣装:d[2],シチュエーション:pick(d[4])};if(D.場所.some(x=>x[0]==d[1]))o.場所=d[1];current=make(o);current.イベント=ev;current.小物=pick(d[3]);render();sync();status.textContent=ev+"を中心に生成しました！"}
+function eventGen(){
+ const ev=document.getElementById("event").value;current=make({__axis:"イベント",__axisValue:ev});current.イベント=ev;render();sync();status.textContent=ev+"を主軸に生成しました！";
+}
 function addCustom(){let w=cw.value.trim();if(!w)return;custom.push({word:w,category:cc.value,related:cr.value.split(",").map(x=>x.trim()).filter(Boolean)});localStorage.ideaCustom=JSON.stringify(custom);cw.value="";cr.value="";renderCustom()}
 function renderCustom(){document.getElementById("custom").innerHTML=custom.length?custom.map((x,i)=>`<div class="card"><b>${esc(x.word)}</b> <span class="tag">${esc(x.category)}</span><div class="small">${x.related.map(esc).join(" / ")}</div><button class="danger" onclick="custom.splice(${i},1);localStorage.ideaCustom=JSON.stringify(custom);renderCustom()">削除</button></div>`).join(""):"<div class='small'>まだありません。</div>"}
 setup();document.getElementById("mr").classList.toggle("active",worldMode==="real");document.getElementById("mf").classList.toggle("active",worldMode==="fantasy");generate();saved();
