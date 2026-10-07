@@ -19,12 +19,35 @@ const ALL=[...new Set(Object.values(CATS).flat())]; const GROUPS=Object.entries(
 function pick(a){a=(a||[]).filter(Boolean); return a.length?a[Math.floor(Math.random()*a.length)]:''}
 function uniq(a){return [...new Set(a.filter(Boolean))]}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function vals(field){let a=uniq([...(D[field]||[]),...(custom[field]||[])]); const mode=document.getElementById('mode')?.value; if(mode==='ファンタジー系'&&fantasyOnly[field]) a=fantasyOnly[field]; if(mode==='現実系'&&field==='非現実要素') return ['なし']; return a}
-const fantasyOnly={場所:D.場所.filter(x=>['魔法学校','古代遺跡','森の集落','空中都市','魔女の工房','王都','城','魔法図書館','竜の谷','妖精の森','星空の神殿','地下迷宮'].includes(x)),職業:D.職業.filter(x=>['魔法使い','錬金術師','騎士','冒険者','司祭','宮廷魔術師','妖精研究者','竜騎士','魔導具職人'].includes(x)),衣装:D.衣装.filter(x=>['ローブ','魔法学校制服','騎士装備','冒険者装備','エルフ風衣装','魔女装束','王宮衣装','錬金術師コート'].includes(x)),イベント:D.イベント||[]};
+// 世界観別データ。現実系ではファンタジー固有語を候補から完全に外す。
+Object.assign(D,{
+  職業:['学生','会社員','教師','店員','カフェ店員','美容師','看護師','医師','保育士','会社員','公務員','アイドル','モデル','イラストレーター','大学生'],
+  衣装:['制服','ブレザー制服','セーラー服','制服＋カーディガン','私服','ワンピース','サマーワンピース','パーカー＋スカート','ニット＋スカート','ブラウス＋スカート','コート＋マフラー','和装','浴衣','巫女装束','チャイナ服','ゴシック風衣装','ロリータ風衣装','メイド服','ウェイトレス衣装','アイドル衣装','スポーティーな服','ジャージ','部屋着','パジャマ','水着'],
+  場所:['海辺','学校の屋上','雨上がりの商店街','古い神社','駅のホーム','教室','図書室','カフェ','ゲームセンター','水族館','遊園地','公園','海の家','展望台','花畑','自宅のリビング','ベランダ','温泉街','夜の街','校庭'],
+  テーマ:['日常','青春','学校生活','放課後','休日','お出かけ','旅行','お祭り','季節の風景','雨の日','夏の思い出','冬の街','春の始まり','秋の景色','友情','のんびりした時間','特別な一日'],
+  非現実要素:['なし'],
+  イベント:['花見','夏祭り','花火大会','文化祭','ハロウィン','クリスマス','お正月','バレンタイン','卒業式','七夕','秋祭り','紅葉狩り','イルミネーション','大晦日','ホワイトデー','入学式','体育祭']
+});
+const REAL_EVENTS=['花見','夏祭り','花火大会','文化祭','ハロウィン','クリスマス','お正月','バレンタイン','卒業式','七夕','秋祭り','紅葉狩り','イルミネーション','大晦日','ホワイトデー','入学式','体育祭'];
+const FANTASY_EVENTS=['魔法祭','月夜の祝祭','王都の祭典','妖精の夜会','竜騎士競技会'];
+const fantasyOnly={場所:['魔法学校','古代遺跡','森の集落','空中都市','魔女の工房','王都','城','魔法図書館','竜の谷','妖精の森','星空の神殿','地下迷宮'],職業:['魔法使い','錬金術師','騎士','冒険者','司祭','宮廷魔術師','妖精研究者','竜騎士','魔導具職人'],衣装:['ローブ','魔法学校制服','騎士装備','冒険者装備','エルフ風衣装','魔女装束','王宮衣装','錬金術師コート'],テーマ:['魔法','冒険','幻想','神秘','古代遺跡','妖精','竜','星空'],イベント:FANTASY_EVENTS,非現実要素:D.非現実要素};
+function vals(field){
+  const mode=document.getElementById('mode')?.value;
+  if(mode==='ファンタジー系'&&fantasyOnly[field]) return uniq([...(fantasyOnly[field]||[])]);
+  if(mode==='現実系'){
+    if(field==='非現実要素') return ['なし'];
+    if(field==='イベント') return REAL_EVENTS.slice();
+    if(field==='テーマ') return D.テーマ.filter(x=>!['魔法','冒険','幻想','神秘','古代遺跡','妖精','竜','星空'].includes(x));
+    if(field==='場所') return D.場所.filter(x=>!['魔法学校','古代遺跡','森の集落','空中都市','魔女の工房','王都','城','魔法図書館','竜の谷','妖精の森','星空の神殿','地下迷宮'].includes(x));
+    if(field==='職業') return D.職業.filter(x=>!['魔法使い','錬金術師','騎士','冒険者','司祭','宮廷魔術師','妖精研究者','竜騎士','魔導具職人'].includes(x));
+    if(field==='衣装') return D.衣装.filter(x=>!['ローブ','魔法学校制服','騎士装備','冒険者装備','エルフ風衣装','魔女装束','王宮衣装','錬金術師コート'].includes(x));
+  }
+  return uniq([...(D[field]||[]),...(custom[field]||[])]);
+}
 function enabled(f){let x=document.querySelector('[data-toggle="'+CSS.escape(f)+'"]'); return !x || x.checked}
 function can(f){return !locks[f] && enabled(f)} function set(f,v){if(can(f)) current[f]=v}
 function themeTokens(){return document.getElementById('seed').value.trim().split(/[\s、,・]+/).filter(Boolean)}
-function eventFor(t){return E[t]?t:Object.keys(E).find(k=>t.includes(k)||k.includes(t))||''}
+function eventFor(t){const allowed=vals('イベント');return E[t]&&allowed.includes(t)?t:allowed.find(k=>t.includes(k)||k.includes(t))||''}
 function inferSeed(){let s=themeTokens().join(' '), out={}; for(const t of themeTokens()){const ev=eventFor(t);if(ev)out.event=ev; for(const c of ['場所','衣装','髪色','瞳の色','性格','髪型','注目部位','テーマ','季節','天候']){let hit=vals(c).find(x=>x===t||t.includes(x)||x.includes(t));if(hit)out[c]=hit} for(const [k,chs] of Object.entries(R)){if(t===k||chs.includes(t))out.related=t}} return out}
 function compatibleActions(place, distance){let a=SCENE_ACTIONS[place]||[]; if(a.length)return a; let general=vals('行動'); if(distance==='バストアップ') general=general.filter(x=>!/(走る|歩く|靴|足|しゃがむ)/.test(x)); if(distance==='遠景') general=general.filter(x=>!/(細かい|本を読む|スマホ)/.test(x)); return general}
 function actionDistance(a){if(/靴|足元|走る|歩く|全身/.test(a))return ['膝上','全身','遠景']; if(/顔|髪|飲み物|話す|本|スマホ/.test(a))return ['バストアップ','腰上','膝上']; return vals('距離')}
@@ -43,7 +66,7 @@ function generateAll(){let seed=inferSeed(); const ev=seed.event||eventFor(seed.
  let cp=colorPersonality(); set('性格',current.性格||pick(cp.length?cp:vals('性格'))); set('職業',pick(vals('職業')));
  if(!current.人数)set('人数',pick(vals('人数'))); set('関係性',current.人数==='1人'?'一人':pick(vals('関係性')));
  if(!current.場所)set('場所',pick(vals('場所'))); if(current.場所==='古い神社'&&!current.衣装)set('衣装',pick(['和装','巫女装束','浴衣']));
- set('時間',pick(vals('時間'))); if(!current.季節)set('季節',pick(vals('季節'))); set('天候',pick(vals('天候'))); if(!current.イベント)set('イベント',pick(Object.keys(E))); if(!current.シチュエーション)set('シチュエーション',pick(vals('シチュエーション')));
+ set('時間',pick(vals('時間'))); if(!current.季節)set('季節',pick(vals('季節'))); set('天候',pick(vals('天候'))); if(!current.イベント)set('イベント',pick(vals('イベント'))); if(!current.シチュエーション)set('シチュエーション',pick(vals('シチュエーション')));
  if(!current.行動){let a=compatibleActions(current.場所,current.距離);set('行動',pick(a))} else if(!locks['行動']&&enabled('行動')) current.行動=current.行動;
  set('衣装系統',pick(vals('衣装系統'))); if(!current.衣装)set('衣装',pick(vals('衣装'))); set('アクセサリー',pick(vals('アクセサリー'))); if(!current.小物)set('小物',pick(vals('小物'))); set('持ち物',pick(vals('持ち物')));
  if(!current.距離){let ds=current.行動?actionDistance(current.行動):vals('距離');set('距離',pick(ds))} if(!current.アングル)set('アングル',pick(vals('アングル'))); if(!current.向き)set('向き',pick(focusDirections(current.注目部位)));
@@ -63,7 +86,7 @@ function generateAll(){let seed=inferSeed(); const ev=seed.event||eventFor(seed.
  if(!locks.ポーズ&&enabled('ポーズ')){if(/手|顔|髪|本|スマホ/.test(current.行動||''))current.ポーズ=pick(['本を持つ','スマホを見る','髪を触る','頬に手を当てる','軽く身を乗り出す']); else current.ポーズ=pick(vals('ポーズ'))}
  render(); status('全体生成しました。主軸：'+axis)}
 function regenGroup(group){const fields=CATS[group]; for(const f of fields){if(can(f)){if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='距離')current[f]=pick(current.行動?actionDistance(current.行動):vals(f)); else current[f]=pick(vals(f))}} if(group==='シーン'&&current.イベント&&E[current.イベント]){let d=E[current.イベント];if(can('季節'))current.季節=d.season;if(can('衣装'))current.衣装=pick(d.outfits);if(can('小物'))current.小物=pick(d.props);if(can('行動'))current.行動=pick(d.actions)} if(group==='キャラクター'&&can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格')); render();status(group+'を再生成しました。ロックは維持しています。')}
-function regenItem(f){if(!can(f))return; if(f==='性格')current[f]=pick(colorPersonality().length?colorPersonality():vals(f)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='距離')current[f]=pick(actionDistance(current.行動)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='衣装'&&current.イベント&&E[current.イベント])current[f]=pick(E[current.イベント].outfits); else current[f]=pick(f==='髪色'?HAIR:f==='瞳の色'?EYES:vals(f)); if(f==='髪色'||f==='瞳の色'){if(can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格'));if(can('表情'))current.表情=pick(EXPR[current.性格]||vals('表情'))} render();status(f+'を再生成しました。')}
+function regenItem(f){if(!can(f))return; if(f==='性格')current[f]=pick(colorPersonality().length?colorPersonality():vals(f)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='距離')current[f]=pick(actionDistance(current.行動)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='衣装'&&current.イベント&&E[current.イベント])current[f]=pick(E[current.イベント].outfits); else current[f]=pick(f==='髪色'?HAIR:f==='瞳の色'?EYES:vals(f)); render();status(f+'を再生成しました。')}
 function render(){
   const root=document.getElementById('results');
   const openState={};
@@ -89,7 +112,7 @@ function render(){
       '雰囲気':'感情'
     }[group];
     if(group==='キャラクター'){
-      preview.textContent='｜性格：'+(current.性格||'—')+'　髪色：'+(current.髪色||'—')+'　瞳：'+(current.瞳の色||'—');
+      preview.textContent='｜性格：'+(current.性格||'—');
     }else{
       preview.textContent=previewField ? '｜'+previewField+'：'+(current[previewField]||'—') : '';
     }
