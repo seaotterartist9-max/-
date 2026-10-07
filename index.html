@@ -66,11 +66,13 @@ function regenGroup(group){const fields=CATS[group]; for(const f of fields){if(c
 function regenItem(f){if(!can(f))return; if(f==='性格')current[f]=pick(colorPersonality().length?colorPersonality():vals(f)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='距離')current[f]=pick(actionDistance(current.行動)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='衣装'&&current.イベント&&E[current.イベント])current[f]=pick(E[current.イベント].outfits); else current[f]=pick(f==='髪色'?HAIR:f==='瞳の色'?EYES:vals(f)); if(f==='髪色'||f==='瞳の色'){if(can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格'));if(can('表情'))current.表情=pick(EXPR[current.性格]||vals('表情'))} render();status(f+'を再生成しました。')}
 function render(){
   const root=document.getElementById('results');
+  const openState={};
+  root.querySelectorAll('details.group').forEach((el,i)=>{ const g=GROUPS[i]?.[0]; if(g) openState[g]=el.open; });
   root.innerHTML='';
   for(const [group,fields] of GROUPS){
     const d=document.createElement('details');
     d.className='group';
-    d.open=false;
+    d.open=Object.prototype.hasOwnProperty.call(openState,group)?openState[group]:false;
 
     const sum=document.createElement('summary');
     const titleWrap=document.createElement('span');
@@ -86,7 +88,11 @@ function render(){
       '構図':'ポーズ',
       '雰囲気':'感情'
     }[group];
-    preview.textContent=previewField ? '｜'+previewField+'：'+(current[previewField]||'—') : '';
+    if(group==='キャラクター'){
+      preview.textContent='｜性格：'+(current.性格||'—')+'　髪色：'+(current.髪色||'—')+'　瞳：'+(current.瞳の色||'—');
+    }else{
+      preview.textContent=previewField ? '｜'+previewField+'：'+(current[previewField]||'—') : '';
+    }
     titleWrap.appendChild(title);
     titleWrap.appendChild(preview);
     const tools=document.createElement('span');
