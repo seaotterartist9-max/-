@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#6d5dfc"><title>お絵描きアイデアガチャ 完全版</title>
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--line:#e3e5ee;--text:#222538;--muted:#74798c;--accent:#6d5dfc;--accent2:#eeeaff;--lock:#ffb020}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}button,input,select{font:inherit}button{border:0;border-radius:12px;padding:10px 13px;background:#fff;border:1px solid var(--line);color:var(--text);cursor:pointer}button:active{transform:translateY(1px)}.app{max-width:900px;margin:auto;padding:16px 12px 50px}h1{font-size:23px;margin:4px 0 3px}h2{font-size:16px;margin:0 0 10px}.sub{color:var(--muted);font-size:12px;margin-bottom:14px}.panel,.group{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:10px 0;box-shadow:0 3px 14px rgba(30,35,60,.04)}.panel{padding:13px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}label{font-size:11px;color:var(--muted);display:block;margin:0 0 4px}select,input[type=text]{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff;color:var(--text)}.wide{grid-column:1/-1}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}.soft{background:var(--accent2);border-color:#dcd5ff}.status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}details.group{overflow:hidden}summary{list-style:none;cursor:pointer;padding:14px 15px;font-weight:800;display:flex;justify-content:space-between;align-items:center}summary::-webkit-details-marker{display:none}.group-tools{display:flex;gap:5px;align-items:center}.group-body{border-top:1px solid var(--line)}.row{display:grid;grid-template-columns:90px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #f0f1f5}.row:last-child{border-bottom:0}.field{font-size:12px;color:var(--muted)}.value{font-size:14px;line-height:1.35;word-break:break-word}.iconbtn{padding:7px 8px;border-radius:9px;font-size:14px}.locked{background:#fff5df;border-color:#ffd27a}.off{opacity:.45}.togglelist{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:260px;overflow:auto}.check{display:flex;align-items:center;gap:6px;font-size:12px;background:#fafafe;padding:7px;border-radius:9px}.check input{accent-color:var(--accent)}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.chip{background:#f3f1ff;border-color:#ded8ff;padding:7px 9px;font-size:12px}.hint{font-size:11px;color:var(--muted);line-height:1.5}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:600px){.controls,.two{grid-template-columns:1fr}.row{grid-template-columns:78px 1fr auto auto}h1{font-size:21px}}
+:root{--bg:#f6f7fb;--card:#fff;--line:#e3e5ee;--text:#222538;--muted:#74798c;--accent:#6d5dfc;--accent2:#eeeaff;--lock:#ffb020}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}button,input,select{font:inherit}button{border:0;border-radius:12px;padding:10px 13px;background:#fff;border:1px solid var(--line);color:var(--text);cursor:pointer}button:active{transform:translateY(1px)}.app{max-width:900px;margin:auto;padding:16px 12px 50px}h1{font-size:23px;margin:4px 0 3px}h2{font-size:16px;margin:0 0 10px}.sub{color:var(--muted);font-size:12px;margin-bottom:14px}.panel,.group{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:10px 0;box-shadow:0 3px 14px rgba(30,35,60,.04)}.panel{padding:13px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}label{font-size:11px;color:var(--muted);display:block;margin:0 0 4px}select,input[type=text]{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff;color:var(--text)}.wide{grid-column:1/-1}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}.soft{background:var(--accent2);border-color:#dcd5ff}.status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}details.group{overflow:hidden}summary{list-style:none;cursor:pointer;padding:14px 15px;font-weight:800;display:flex;justify-content:space-between;align-items:center}summary::-webkit-details-marker{display:none}.group-tools{display:flex;gap:5px;align-items:center}.group-title{display:flex;align-items:center;gap:8px;min-width:0}.group-preview{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.group-preview b{color:var(--text);font-weight:800}.group-body{border-top:1px solid var(--line)}.row{display:grid;grid-template-columns:90px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #f0f1f5}.row:last-child{border-bottom:0}.field{font-size:12px;color:var(--muted)}.value{font-size:14px;line-height:1.35;word-break:break-word}.iconbtn{padding:7px 8px;border-radius:9px;font-size:14px}.locked{background:#fff5df;border-color:#ffd27a}.off{opacity:.45}.togglelist{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:260px;overflow:auto}.check{display:flex;align-items:center;gap:6px;font-size:12px;background:#fafafe;padding:7px;border-radius:9px}.check input{accent-color:var(--accent)}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.chip{background:#f3f1ff;border-color:#ded8ff;padding:7px 9px;font-size:12px}.hint{font-size:11px;color:var(--muted);line-height:1.5}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:600px){.controls,.two{grid-template-columns:1fr}.row{grid-template-columns:78px 1fr auto auto}h1{font-size:21px}}
 </style></head><body><main class="app">
 <h1>🎲 お絵描きアイデアガチャ</h1><div class="sub">ランダムだけど、まず主軸を決めて、そこから絵全体をつなげる完全版。</div>
 <section class="panel"><h2>🎯 生成の軸</h2><div class="controls"><div><label>世界観</label><select id="mode"><option>おまかせ</option><option>現実系</option><option>ファンタジー系</option></select></div><div><label>主軸</label><select id="axis"><option>おまかせ</option><option>場所</option><option>シチュエーション</option><option>行動</option><option>注目部位</option><option>性格</option><option>髪型</option><option>髪色</option><option>瞳の色</option><option>衣装</option><option>人物</option><option>イベント</option><option>テーマ</option></select></div><div class="wide"><label>主軸・テーマ入力（例：クリスマス / 赤髪 / 海 / 夏祭り）</label><input id="seed" type="text" placeholder="入力すると関連要素をまとめて寄せます"></div></div><div class="actions"><button class="primary" onclick="generateAll()">🎲 全体生成</button><button onclick="copyResult()">📋 コピー</button><button class="soft" onclick="clearLocks()">🔓 ロック解除</button></div><div id="status" class="status"></div></section>
@@ -64,7 +64,96 @@ function generateAll(){let seed=inferSeed(); const ev=seed.event||eventFor(seed.
  render(); status('全体生成しました。主軸：'+axis)}
 function regenGroup(group){const fields=CATS[group]; for(const f of fields){if(can(f)){if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='距離')current[f]=pick(current.行動?actionDistance(current.行動):vals(f)); else current[f]=pick(vals(f))}} if(group==='シーン'&&current.イベント&&E[current.イベント]){let d=E[current.イベント];if(can('季節'))current.季節=d.season;if(can('衣装'))current.衣装=pick(d.outfits);if(can('小物'))current.小物=pick(d.props);if(can('行動'))current.行動=pick(d.actions)} if(group==='キャラクター'&&can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格')); render();status(group+'を再生成しました。ロックは維持しています。')}
 function regenItem(f){if(!can(f))return; if(f==='性格')current[f]=pick(colorPersonality().length?colorPersonality():vals(f)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='距離')current[f]=pick(actionDistance(current.行動)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='衣装'&&current.イベント&&E[current.イベント])current[f]=pick(E[current.イベント].outfits); else current[f]=pick(f==='髪色'?HAIR:f==='瞳の色'?EYES:vals(f)); if(f==='髪色'||f==='瞳の色'){if(can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格'));if(can('表情'))current.表情=pick(EXPR[current.性格]||vals('表情'))} render();status(f+'を再生成しました。')}
-function render(){const root=document.getElementById('results');root.innerHTML='';for(const [group,fields] of GROUPS){let d=document.createElement('details');d.className='group';d.open=false;let sum=document.createElement('summary');sum.innerHTML='<span>'+group+'</span><span class="group-tools"><button class="iconbtn" onclick="event.preventDefault();regenGroup('+JSON.stringify(group)+')">🔄</button><span>⌄</span></span>';d.appendChild(sum);let body=document.createElement('div');body.className='group-body';for(const f of fields){let row=document.createElement('div');row.className='row '+(!enabled(f)?'off':'');let lk=!!locks[f];row.innerHTML='<div class="field">'+esc(f)+'</div><div class="value">'+esc(current[f]||'—')+'</div><button class="iconbtn '+(lk?'locked':'')+'" onclick="toggleLock('+JSON.stringify(f)+')">'+(lk?'🔒':'🔓')+'</button><button class="iconbtn" onclick="regenItem('+JSON.stringify(f)+')">🔄</button>';body.appendChild(row)}d.appendChild(body);root.appendChild(d)}}
+function render(){
+  const root=document.getElementById('results');
+  root.innerHTML='';
+  for(const [group,fields] of GROUPS){
+    const d=document.createElement('details');
+    d.className='group';
+    d.open=false;
+
+    const sum=document.createElement('summary');
+    const titleWrap=document.createElement('span');
+    titleWrap.className='group-title';
+    const title=document.createElement('span');
+    title.textContent=group;
+    const preview=document.createElement('span');
+    preview.className='group-preview';
+    const previewField={
+      'キャラクター':'性格',
+      'スタイル':'衣装',
+      'シーン':'場所',
+      '構図':'ポーズ',
+      '雰囲気':'感情'
+    }[group];
+    preview.textContent=previewField ? '｜'+previewField+'：'+(current[previewField]||'—') : '';
+    titleWrap.appendChild(title);
+    titleWrap.appendChild(preview);
+    const tools=document.createElement('span');
+    tools.className='group-tools';
+    const groupBtn=document.createElement('button');
+    groupBtn.type='button';
+    groupBtn.className='iconbtn';
+    groupBtn.textContent='🔄';
+    groupBtn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      regenGroup(group);
+    });
+    const arrow=document.createElement('span');
+    arrow.textContent='⌄';
+    tools.appendChild(groupBtn);
+    tools.appendChild(arrow);
+    sum.appendChild(titleWrap);
+    sum.appendChild(tools);
+    d.appendChild(sum);
+
+    const body=document.createElement('div');
+    body.className='group-body';
+    for(const f of fields){
+      const row=document.createElement('div');
+      row.className='row '+(!enabled(f)?'off':'');
+
+      const label=document.createElement('div');
+      label.className='field';
+      label.textContent=f;
+
+      const value=document.createElement('div');
+      value.className='value';
+      value.textContent=current[f]||'—';
+
+      const lockBtn=document.createElement('button');
+      lockBtn.type='button';
+      lockBtn.className='iconbtn '+(locks[f]?'locked':'');
+      lockBtn.textContent=locks[f]?'🔒':'🔓';
+      lockBtn.setAttribute('aria-label',locks[f]?f+'のロックを解除':f+'をロック');
+      lockBtn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        toggleLock(f);
+      });
+
+      const regenBtn=document.createElement('button');
+      regenBtn.type='button';
+      regenBtn.className='iconbtn';
+      regenBtn.textContent='🔄';
+      regenBtn.setAttribute('aria-label',f+'を再生成');
+      regenBtn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        regenItem(f);
+      });
+
+      row.appendChild(label);
+      row.appendChild(value);
+      row.appendChild(lockBtn);
+      row.appendChild(regenBtn);
+      body.appendChild(row);
+    }
+    d.appendChild(body);
+    root.appendChild(d);
+  }
+}
 function toggleLock(f){locks[f]=!locks[f];render();saveSettings();status((locks[f]?'🔒 ロック：':'🔓 解除：')+f)}function clearLocks(){for(const k in locks)delete locks[k];render();status('すべてのロックを解除しました')}
 function status(s){document.getElementById('status').textContent=s}
 function copyResult(){let t=GROUPS.map(([g,fs])=>g+'\n'+fs.map(f=>f+'：'+(current[f]||'')).join('\n')).join('\n\n');navigator.clipboard?.writeText(t);status('生成結果をコピーしました')}
