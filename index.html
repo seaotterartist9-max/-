@@ -1,105 +1,81 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f7f5f0">
-<title>お絵描きアイデアガチャ</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#6d5dfc"><title>お絵描きアイデアガチャ 完全版</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f7f5f0;color:#292929;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
-main{max-width:560px;margin:auto;padding:18px 14px 32px}
-h1{font-size:24px;margin:6px 0 4px}
-.sub{color:#777;font-size:13px;margin-bottom:16px}
-.card{background:white;border:1px solid #e6e2da;border-radius:16px;padding:14px;margin:9px 0;box-shadow:0 2px 8px #00000008}
-.row{display:flex;align-items:center;gap:10px}
-.icon{font-size:22px;width:30px}
-.label{font-weight:700;font-size:13px;color:#777}
-.value{font-size:17px;line-height:1.5;margin-top:3px}
-button{border:0;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:700;cursor:pointer}
-.primary{width:100%;background:#292929;color:white;font-size:17px;margin:10px 0}
-.secondary{background:#eeeae2;color:#333}
-.actions{display:flex;gap:8px;margin-top:14px}
-.actions button{flex:1}
-.status{font-size:12px;color:#777;text-align:center;min-height:18px;margin:5px}
-.saved{margin-top:20px}
-.saved h2{font-size:16px}
-.small{font-size:12px;color:#888}
-</style>
-</head>
-<body>
-<main>
-<h1>🎨 お絵描きアイデアガチャ</h1>
-<div class="sub">7つの要素を、ひとつの絵として成立しやすいように組み合わせます。</div>
-<section id="result"></section>
-<button class="primary" onclick="generate()">🎲 アイデアを生成</button>
-<div class="actions">
-<button class="secondary" onclick="saveIdea()">♡ 保存</button>
-<button class="secondary" onclick="copyIdea()">⧉ コピー</button>
-</div>
-<div id="status" class="status"></div>
-<section class="saved">
-<h2>保存したお題</h2>
-<div id="savedList" class="small">まだありません。</div>
-</section>
+:root{--bg:#f6f7fb;--card:#fff;--line:#e3e5ee;--text:#222538;--muted:#74798c;--accent:#6d5dfc;--accent2:#eeeaff;--lock:#ffb020}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}button,input,select{font:inherit}button{border:0;border-radius:12px;padding:10px 13px;background:#fff;border:1px solid var(--line);color:var(--text);cursor:pointer}button:active{transform:translateY(1px)}.app{max-width:900px;margin:auto;padding:16px 12px 50px}h1{font-size:23px;margin:4px 0 3px}h2{font-size:16px;margin:0 0 10px}.sub{color:var(--muted);font-size:12px;margin-bottom:14px}.panel,.group{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:10px 0;box-shadow:0 3px 14px rgba(30,35,60,.04)}.panel{padding:13px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}label{font-size:11px;color:var(--muted);display:block;margin:0 0 4px}select,input[type=text]{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff;color:var(--text)}.wide{grid-column:1/-1}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}.soft{background:var(--accent2);border-color:#dcd5ff}.status{font-size:12px;color:var(--muted);margin-top:10px;min-height:18px}details.group{overflow:hidden}summary{list-style:none;cursor:pointer;padding:14px 15px;font-weight:800;display:flex;justify-content:space-between;align-items:center}summary::-webkit-details-marker{display:none}.group-tools{display:flex;gap:5px;align-items:center}.group-body{border-top:1px solid var(--line)}.row{display:grid;grid-template-columns:90px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid #f0f1f5}.row:last-child{border-bottom:0}.field{font-size:12px;color:var(--muted)}.value{font-size:14px;line-height:1.35;word-break:break-word}.iconbtn{padding:7px 8px;border-radius:9px;font-size:14px}.locked{background:#fff5df;border-color:#ffd27a}.off{opacity:.45}.togglelist{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:260px;overflow:auto}.check{display:flex;align-items:center;gap:6px;font-size:12px;background:#fafafe;padding:7px;border-radius:9px}.check input{accent-color:var(--accent)}.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.chip{background:#f3f1ff;border-color:#ded8ff;padding:7px 9px;font-size:12px}.hint{font-size:11px;color:var(--muted);line-height:1.5}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:600px){.controls,.two{grid-template-columns:1fr}.row{grid-template-columns:78px 1fr auto auto}h1{font-size:21px}}
+</style></head><body><main class="app">
+<h1>🎲 お絵描きアイデアガチャ</h1><div class="sub">ランダムだけど、まず主軸を決めて、そこから絵全体をつなげる完全版。</div>
+<section class="panel"><h2>🎯 生成の軸</h2><div class="controls"><div><label>世界観</label><select id="mode"><option>おまかせ</option><option>現実系</option><option>ファンタジー系</option></select></div><div><label>主軸</label><select id="axis"><option>おまかせ</option><option>場所</option><option>シチュエーション</option><option>行動</option><option>注目部位</option><option>性格</option><option>髪型</option><option>髪色</option><option>瞳の色</option><option>衣装</option><option>人物</option><option>イベント</option><option>テーマ</option></select></div><div class="wide"><label>主軸・テーマ入力（例：クリスマス / 赤髪 / 海 / 夏祭り）</label><input id="seed" type="text" placeholder="入力すると関連要素をまとめて寄せます"></div></div><div class="actions"><button class="primary" onclick="generateAll()">🎲 全体生成</button><button onclick="copyResult()">📋 コピー</button><button class="soft" onclick="clearLocks()">🔓 ロック解除</button></div><div id="status" class="status"></div></section>
+<section class="panel"><h2>⚙️ 生成ON/OFF</h2><div id="toggles" class="togglelist"></div><div class="hint">OFFにした項目は全体生成・カテゴリ再生成で変更しません。ロックはさらに優先されます。</div></section>
+<div id="results"></div>
+<section class="panel"><h2>🔎 関連ワード登録・検索</h2><div class="two"><div><label>検索ワード</label><input id="relInput" type="text" placeholder="例：夏、服、猫、クリスマス"></div><div><label>ユーザー登録</label><input id="customWord" type="text" placeholder="追加したい言葉"></div></div><div class="actions"><button onclick="searchRelated()">🔎 探す</button><button onclick="addCustomRelated()">＋ 関連ワード登録</button></div><div id="relatedResults" class="chips"></div><div class="hint">タグを押すと、その言葉をさらに掘り下げます。ユーザー登録語は選んだ実カテゴリに追加できます。</div></section>
+<section class="panel"><h2>👤 ユーザーデータ</h2><div class="two"><div><label>追加先カテゴリ</label><select id="customCat"><option>性別</option><option>年齢</option><option>性格</option><option>髪型</option><option>髪色</option><option>瞳の色</option><option>職業</option><option>衣装</option><option>衣装系統</option><option>アクセサリー</option><option>小物</option><option>持ち物</option><option>場所</option><option>時間</option><option>季節</option><option>天候</option><option>イベント</option><option>シチュエーション</option><option>行動</option><option>人数</option><option>関係性</option><option>距離</option><option>アングル</option><option>向き</option><option>注目部位</option><option>ポーズ</option><option>テーマ</option><option>感情</option><option>表情</option><option>非現実要素</option></select></div><div><label>登録する言葉</label><input id="customData" type="text" placeholder="例：お気に入りの衣装"></div></div><div class="actions"><button onclick="addCustomData()">＋ 登録</button><button onclick="showCustom()">📦 登録済みを見る</button></div><div id="customList" class="chips"></div></section>
+<section class="panel"><h2>💡 もう一捻り</h2><div class="actions"><button onclick="twist()">💡 もう一捻り</button><button onclick="mixOne()">🌀 異物を1個混ぜる</button><button onclick="beforeAfter()">📖 前後を考える</button></div></section>
 </main>
 <script>
-const data={
-場所:[
-["海辺",["春","夏","秋"],["昼","夕方","夜"],["水着","私服","薄手の上着"],["海を眺める","散歩する","夕日を見る"],["水平線を大きく入れる","後ろ姿","波打ち際のローアングル"]],
-["学校の屋上",["春","夏","秋"],["昼","放課後","夕方"],["制服","制服＋カーディガン","私服"],["友人と話す","一人で空を眺める","風に当たる"],["空を大きく入れる","フェンス越し","少し離れた遠景"]],
-["雨上がりの商店街",["春","夏","秋","冬"],["夕方","夜","放課後"],["制服","私服＋薄手の上着","コート"],["誰かを待つ","店を眺める","傘を閉じる"],["水たまりの反射","道路の反対側から","看板を背景に"]],
-["古い神社",["春","夏","秋","冬"],["朝","夕方","夜"],["制服","和装","普段着＋羽織"],["参拝する","境内を歩く","何かを探す"],["鳥居越し","階段の下から","木々を前景に"]],
-["駅のホーム",["春","夏","秋","冬"],["朝","夕方","夜"],["制服","通勤服","コート＋マフラー"],["電車を待つ","誰かを見送る","偶然再会する"],["ホームを奥行きに使う","電車越し","横顔のアップ"]]
-],
-時間:["朝","昼","放課後","夕方","夜","深夜"],
-季節:["春","夏","秋","冬"],
-衣装:["制服","制服＋カーディガン","私服","ワンピース","パーカー＋スカート","コート＋マフラー","和装","スポーティーな服"],
-表情:["楽しそう","少し寂しげ","照れた笑顔","驚いている","眠そう","真剣な表情","穏やかな笑顔","不安そう"],
-シチュエーション:["誰かを待っている","友人と話している","一人で物思いにふけっている","何かを探している","偶然誰かと出会う","帰るところ","景色を眺めている"],
-構図:["顔を大きく見せる寄りの構図","全身を入れた縦構図","後ろ姿","少し見上げるローアングル","少し見下ろすハイアングル","背景を大きく入れた遠景","手前に小物を置いた前景構図"]
-};
-const icons={場所:"📍",時間:"🕐",季節:"🍂",衣装:"👗",表情:"🙂",シチュエーション:"🎬",構図:"📐"};
-const keys=["場所","時間","季節","衣装","表情","シチュエーション","構図"];
-let current=null;
-
-function pick(a){return a[Math.floor(Math.random()*a.length)]}
-function makeIdea(){
- const p=pick(data.場所);
- const season=pick(p[1]), time=pick(p[2]), outfit=pick(p[3]);
- const situation=pick(p[4]), composition=pick(p[5]);
- const mood=pick(data.表情);
- return {場所:p[0],時間:time,季節:season,衣装:outfit,表情:mood,シチュエーション:situation,構図:composition};
-}
-function generate(){
- current=makeIdea(); render();
-}
-const resultEl=document.getElementById("result");
-const statusEl=document.getElementById("status");
-const savedListEl=document.getElementById("savedList");
-
-function render(){
- resultEl.innerHTML=keys.map(k=>`<div class="card"><div class="row"><div class="icon">${icons[k]}</div><div><div class="label">${k}</div><div class="value">${current[k]}</div></div></div></div>`).join("");
- statusEl.textContent="";
-}
-function text(){
- return keys.map(k=>`${icons[k]} ${k}：${current[k]}`).join("\n");
-}
-function copyIdea(){
- if(!current)return;
- navigator.clipboard?.writeText(text()).then(()=>statusEl.textContent="コピーしました！").catch(()=>statusEl.textContent="コピーに失敗しました。");
-}
-function saveIdea(){
- if(!current)return;
- const arr=JSON.parse(localStorage.getItem("drawingIdeas")||"[]");
- arr.unshift(current); localStorage.setItem("drawingIdeas",JSON.stringify(arr.slice(0,20)));
- renderSaved(); statusEl.textContent="保存しました！";
-}
-function renderSaved(){
- const arr=JSON.parse(localStorage.getItem("drawingIdeas")||"[]");
- savedListEl.innerHTML=arr.length?arr.map((x,i)=>`<div class="card"><div class="value">${x.場所}・${x.季節}・${x.時間}</div><div class="small">${x.衣装}／${x.シチュエーション}／${x.構図}</div></div>`).join(""):"まだありません。";
-}
-generate(); renderSaved();
-</script>
-</body>
-</html>
+const D={"性別":["女性","男性","中性的"],"年齢":["成人","20代前半","20代後半","30代","40代"],"性格":["クール","元気","おっとり","天然","ツンデレ","ボーイッシュ","小悪魔","お嬢様","ギャル","清楚","不思議ちゃん","無口","ミステリアス","真面目","マイペース","甘えん坊","勝ち気","内気","儚げ","知的","活発","強気","熱血","冷静","華やか","芯が強い","情熱的","優しい","穏やか","自信家","大人っぽい","親しみやすい","好奇心旺盛"],"髪型":["ロングヘア","ショートヘア","ボブ","ツインテール","ポニーテール","ハーフアップ","サイドテール","三つ編み","お団子ヘア","ウェーブヘア","姫カット","前髪ぱっつん","長い前髪"],"職業":["魔法使い","錬金術師","騎士","冒険者","司祭","宮廷魔術師","妖精研究者","竜騎士","魔導具職人"],"衣装":["ローブ","魔法学校制服","騎士装備","冒険者装備","エルフ風衣装","魔女装束","王宮衣装","錬金術師コート"],"衣装系統":["清楚系","ガーリー系","フェミニン","カジュアル","ロリータ","ゴシック","和風","スポーティー","制服系","フォーマル"],"アクセサリー":["リボン","イヤリング","ピアス","ネックレス","チョーカー","腕時計","ブレスレット","ヘアピン","カチューシャ","眼鏡","帽子","シュシュ"],"小物":["スマホ","本","傘","バッグ","飲み物","カメラ","花束","ぬいぐるみ","イヤホン","お菓子","扇子","お守り"],"持ち物":["トートバッグ","ショルダーバッグ","通学バッグ","紙袋","財布","ノート","ペンケース","水筒","折りたたみ傘","買い物袋"],"場所":["魔法学校","古代遺跡","森の集落","空中都市","魔女の工房","王都","城","魔法図書館","竜の谷","妖精の森","星空の神殿","地下迷宮"],"時間":["早朝","朝","昼","夕方","放課後","夜","深夜"],"季節":["春","夏","秋","冬"],"天候":["晴れ","曇り","雨","雨上がり","雪","強い風","薄曇り"],"シチュエーション":["放課後に二人で過ごす","雨宿りする","買い物の途中","休日の散歩","静かな読書時間","友人と待ち合わせ","帰り道","景色を眺める","イベントを楽しむ","一人で休憩する","偶然出会う"],"行動":["歩く","立ち止まる","座る","話す","笑う","本を読む","飲み物を飲む","写真を撮る","景色を見る","スマホを見る","何かを手渡す","待つ","食べる","走る","しゃがむ"],"人数":["1人","2人","3人","4人以上"],"関係性":["一人","友人","親しい友人","同僚","家族","恋人ではない二人","知り合い","クラスメイト"],"距離":["バストアップ","腰上","膝上","全身","遠景"],"アングル":["目線の高さ","少し見上げる（ローアングル）","少し見下ろす（ハイアングル）","かなり低い位置","かなり高い位置"],"向き":["正面","斜め前","横","斜め後ろ","後ろ姿"],"注目部位":["顔","目・瞳","髪","手","指先","胸元","胸・胸元","背中","腰","脚","足元","全身"],"ポーズ":["立つ","歩く","座る","振り返る","手を振る","髪を触る","頬に手を当てる","飲み物を持つ","本を持つ","スマホを見る","片手を腰に当てる","しゃがむ","軽く身を乗り出す"],"テーマ":["魔法","冒険","幻想","神秘","古代遺跡","妖精","竜","星空"],"感情":["楽しい","嬉しい","安心","照れ","驚き","集中","寂しさ","期待","緊張","落ち着き","好奇心","自信","戸惑い"],"表情":["笑顔","微笑み","真顔","照れ顔","驚いた顔","困り顔","眠そうな顔","真剣な表情","優しい表情","少し寂しげな表情","得意げな表情"],"非現実要素":["小さな魔法","魔法陣","光る魔法粒子","小さな精霊","浮遊する本","幻想的な霧","光る植物"],"イベント":["魔法祭","月夜の祝祭","王都の祭典","妖精の夜会","竜騎士競技会"]}; const E={"花見":{"season":"春","outfits":["私服","ワンピース","制服＋カーディガン","春の和装"],"props":["桜","お弁当","レジャーシート","花束","桜の枝"],"actions":["桜を眺める","お弁当を食べる","写真を撮る","花びらを手に取る"]},"夏祭り":{"season":"夏","outfits":["浴衣","浴衣＋巾着","甚平","夏祭り風の私服","法被"],"props":["屋台","提灯","うちわ","かき氷","ヨーヨー","りんご飴"],"actions":["屋台を見る","かき氷を食べる","人混みを歩く","うちわで扇ぐ","花火を見る"]},"花火大会":{"season":"夏","outfits":["浴衣","浴衣＋巾着","甚平","夏のワンピース"],"props":["花火","屋台","うちわ","飲み物","レジャーシート"],"actions":["花火を見上げる","人混みを歩く","夜空を眺める","屋台で買い物する"]},"文化祭":{"season":"秋","outfits":["制服","クラスTシャツ","メイド服","執事服","ウェイトレス衣装","演劇衣装"],"props":["模擬店","ポスター","ステージ","文化祭チケット","看板"],"actions":["模擬店を手伝う","ステージを見る","呼び込みをする","友人と話す","校内を歩く"]},"ハロウィン":{"season":"秋","outfits":["魔女コスチューム","吸血鬼コスチューム","ゴーストコスチューム","ゾンビコスチューム","ミイラコスチューム","キョンシー衣装","デビルコスチューム","黒猫コスチューム","ガイコツコスチューム","ゴシック系ハロウィン衣装","かぼちゃモチーフ衣装"],"props":["お菓子","かぼちゃ","ランタン","お札","魔女の杖","黒猫のぬいぐるみ","仮面"],"actions":["お菓子をもらう","お菓子を配る","街を歩く","ランタンを持つ","仮装した友人と話す","いたずらを仕掛ける"]},"クリスマス":{"season":"冬","outfits":["サンタ衣装","サンタ風ワンピース","トナカイ衣装","クリスマスカラーの私服","ニット＋マフラー","パーティードレス"],"props":["クリスマスツリー","プレゼント","ケーキ","雪","リボン","イルミネーション"],"actions":["イルミネーションを見る","プレゼントを渡す","ツリーを飾る","ケーキを食べる","雪を見る"]},"お正月":{"season":"冬","outfits":["和装","振袖","巫女装束","着物＋羽織","冬の和装"],"props":["門松","おみくじ","鏡餅","初詣のお守り","破魔矢","甘酒"],"actions":["初詣する","おみくじを引く","お守りを選ぶ","境内を歩く","新年の挨拶をする"]},"バレンタイン":{"season":"冬","outfits":["私服＋エプロン","パティシエ風衣装","制服＋エプロン","ハートモチーフのワンピース","可愛いワンピース","カフェ店員風衣装"],"props":["チョコレート","ラッピング","紙袋","ハート型のお菓子","リボン","メッセージカード"],"actions":["チョコを渡す","チョコを作る","ラッピングする","誰かを待つ","お菓子を食べる"]},"卒業式":{"season":"春","outfits":["制服","卒業式用の制服","袴","セレモニーワンピース","スーツ"],"props":["卒業証書","花束","黒板","卒業アルバム","寄せ書き","記念写真"],"actions":["友達と話す","卒業証書を持つ","写真を撮る","校舎を振り返る","花束を受け取る"]},"七夕":{"season":"夏","outfits":["浴衣","夏のワンピース","織姫風衣装","和風ワンピース","甚平"],"props":["笹","短冊","星飾り","風鈴","天の川モチーフの飾り"],"actions":["短冊を書く","笹に短冊を結ぶ","星空を見る","七夕飾りを眺める"]},"秋祭り":{"season":"秋","outfits":["浴衣","秋祭り風の私服","法被","和装"],"props":["屋台","提灯","お面","りんご飴","焼きそば","射的の景品"],"actions":["屋台を見る","お面を選ぶ","食べ歩きする","神社を歩く","祭りを眺める"]},"紅葉狩り":{"season":"秋","outfits":["秋服","ニット＋スカート","ワンピース＋カーディガン","和装","コート＋マフラー"],"props":["紅葉","落ち葉","温かい飲み物","カメラ","小さなバッグ"],"actions":["紅葉を眺める","落ち葉を拾う","写真を撮る","散歩する","温かい飲み物を飲む"]},"イルミネーション":{"season":"冬","outfits":["コート＋マフラー","冬のワンピース","ニット＋スカート","イルミネーション向けの私服","ロングコート"],"props":["イルミネーション","マフラー","温かい飲み物","スマホ","小さなバッグ"],"actions":["イルミネーションを見る","写真を撮る","街を歩く","温かい飲み物を飲む"]},"大晦日":{"season":"冬","outfits":["冬の私服","コート＋マフラー","和装","部屋着"],"props":["年越しそば","除夜の鐘","時計","みかん","テレビ"],"actions":["年越しを待つ","除夜の鐘を聞く","年越しそばを食べる","夜の街を歩く"]},"ホワイトデー":{"season":"春","outfits":["私服","きれいめなワンピース","制服＋カーディガン","カフェ店員風衣装"],"props":["お菓子","プレゼント","紙袋","リボン","メッセージカード"],"actions":["プレゼントを渡す","お菓子を選ぶ","カフェで話す","ラッピングを開ける"]},"入学式":{"season":"春","outfits":["制服","ブレザー制服","セーラー服","制服＋カーディガン","セレモニー服"],"props":["通学バッグ","入学証書","花束","桜","校章"],"actions":["校舎へ向かう","友達と話す","桜を見る","記念写真を撮る"]},"体育祭":{"season":"秋","outfits":["体操服","ジャージ","クラスTシャツ","運動着"],"props":["ゼッケン","応援旗","リレー用バトン","タオル","飲み物"],"actions":["走る","応援する","バトンを渡す","休憩する","友人と話す"]}}; const R={"服":["清楚系","ガーリー系","フェミニン","カジュアル","ロリータ","ゴシック","和風","スポーティー","制服系","フォーマル"],"清楚系":["ブラウス＋スカート","ワンピース","制服＋カーディガン"],"ガーリー系":["ワンピース","リボン","フリルスカート"],"フェミニン":["ワンピース","ロングスカート","ブラウス＋スカート"],"カジュアル":["パーカー＋スカート","私服","ニット＋スカート"],"ロリータ":["ロリータ風衣装","リボン","フリル"],"ゴシック":["ゴシック風衣装","黒いリボン","チョーカー"],"和風":["和装","浴衣","巫女装束","扇子"],"食べ物":["和食","洋食","中華料理","スイーツ","和菓子"],"和食":["おにぎり","そば","寿司","定食"],"洋食":["オムライス","パスタ","サンドイッチ","ケーキ"],"中華料理":["炒飯","餃子","ラーメン"],"スイーツ":["ケーキ","プリン","パフェ","クレープ"],"和菓子":["団子","どら焼き","羊羹","たい焼き"],"動物":["哺乳類","鳥類","爬虫類","魚類","昆虫","海洋生物"],"哺乳類":["猫","犬","うさぎ","狐"],"鳥類":["小鳥","カラス","フクロウ"],"爬虫類":["トカゲ","カメ","ヘビ"],"魚類":["金魚","熱帯魚","鯉"],"昆虫":["蝶","蛍","てんとう虫"],"海洋生物":["イルカ","クラゲ","海亀"],"花":["桜","ひまわり","紫陽花","コスモス","チューリップ","藤"],"植物":["桜","木漏れ日","観葉植物","紅葉","竹"],"飲み物":["コーヒー","紅茶","ジュース","ソーダ","抹茶","ホットチョコレート"],"趣味":["読書","写真","ゲーム","料理","音楽","散歩","絵を描く"],"音楽":["ピアノ","ギター","イヤホン","ライブ","吹奏楽"],"家具":["ソファ","机","本棚","ベンチ","窓辺"],"美容":["ヘアアレンジ","ネイル","メイク","スキンケア"],"乗り物":["電車","自転車","バス","車","船"],"自然":["海","山","川","森林","星空","夕焼け"],"学校":["教室","図書室","屋上","校庭","制服","文化祭","体育祭"],"店":["カフェ","書店","コンビニ","雑貨店","洋菓子店"],"建物":["神社","学校","駅","美術館","水族館","遊園地"],"持ち物":["本","スマホ","傘","カメラ","バッグ","お守り"],"夏":["海","水着","夏祭り","花火大会","浴衣","かき氷","ひまわり"],"冬":["雪","クリスマス","イルミネーション","コート＋マフラー","温かい飲み物"],"春":["桜","花見","入学式","卒業式","ワンピース"],"秋":["紅葉","文化祭","体育祭","秋祭り","ニット＋スカート"],"雨":["雨宿り","傘","水たまり","雨上がり","レインコート"],"海":["海辺","海の家","水着","サンダル","夕焼け"],"猫":["黒猫","猫耳","猫のぬいぐるみ"],"クリスマス":["クリスマスツリー","プレゼント","イルミネーション","サンタ衣装","ケーキ","雪"],"ハロウィン":["魔女コスチューム","ランタン","お菓子","かぼちゃ","仮面"],"お正月":["初詣","和装","おみくじ","お守り","門松","鏡餅"]}; const HAIR=["黒髪","茶髪","金髪","銀髪","白髪","赤髪","青髪","水色髪","緑髪","紫髪","ピンク髪","オレンジ髪"]; const EYES=["黒","茶色","青","水色","緑","黄緑","黄色","金色","オレンジ","赤","紫","ピンク","灰色"]; const HAIRLINK={"赤髪":["勝ち気","強気","活発","熱血"],"青髪":["クール","知的","冷静"],"黒髪":["真面目","芯が強い","ミステリアス"],"白髪":["儚げ","ミステリアス","芯が強い"],"銀髪":["儚げ","知的","ミステリアス"],"金髪":["お嬢様","華やか","自信家"],"ピンク髪":["甘えん坊","天然","おっとり"],"紫髪":["ミステリアス","小悪魔","知的"],"緑髪":["おっとり","優しい","穏やか"],"オレンジ髪":["元気","活発","情熱的"],"茶髪":["親しみやすい","穏やか","真面目"],"水色髪":["おっとり","冷静","儚げ"]}; const EYELINK={"赤":["強気","情熱的","ミステリアス"],"青":["クール","知的","冷静"],"水色":["おっとり","優しい","儚げ"],"緑":["優しい","穏やか","知的"],"黄緑":["好奇心旺盛","元気"],"黄色":["元気","活発","自信家"],"金色":["華やか","自信家","お嬢様"],"オレンジ":["元気","情熱的"],"紫":["ミステリアス","小悪魔","知的"],"ピンク":["甘えん坊","天然","おっとり"],"茶色":["親しみやすい","穏やか","真面目"],"黒":["真面目","芯が強い","ミステリアス"],"灰色":["クール","無口","知的"]}; const COMBO={"赤髪|赤":["勝ち気","強気","熱血"],"青髪|青":["クール","知的","冷静"],"黒髪|赤":["真面目","芯が強い","ミステリアス"],"白髪|赤":["儚げ","ミステリアス","芯が強い"],"金髪|青":["お嬢様","華やか","知的"],"ピンク髪|ピンク":["甘えん坊","天然","おっとり"],"紫髪|紫":["ミステリアス","小悪魔","知的"],"銀髪|紫":["儚げ","ミステリアス","知的"],"緑髪|緑":["おっとり","優しい","穏やか"],"オレンジ髪|黄色":["元気","活発","情熱的"]}; const SCENE_ACTIONS={"教室":["授業を受ける","放課後に残る","友人と話す"],"図書室":["本を読む","本を探す","静かに過ごす"],"カフェ":["飲み物を飲む","窓の外を見る","友人と話す"],"ゲームセンター":["ゲームで遊ぶ","景品を眺める","友人と遊ぶ"],"水族館":["水槽を眺める","クラゲを見る","館内を歩く"],"遊園地":["アトラクションに乗る","食べ歩きする","観覧車を見る"],"公園":["散歩する","ベンチで休む","花を眺める"],"海の家":["飲み物を飲む","海を眺める","休憩する"],"展望台":["景色を眺める","夜景を見る","写真を撮る"],"花畑":["花を眺める","花に触れる","写真を撮る"],"自宅のリビング":["くつろぐ","本を読む","飲み物を飲む"],"ベランダ":["外を眺める","風に当たる","空を見る"],"温泉街":["温泉街を歩く","店先を見る","足湯に入る"],"夜の街":["街を歩く","夜景を見る","店先で立ち止まる"]}; const EXPR={"クール":["真顔","真剣な表情"],"元気":["笑顔","得意げな表情"],"おっとり":["微笑み","優しい表情"],"天然":["微笑み","驚いた顔"],"ツンデレ":["照れ顔","困り顔"],"ボーイッシュ":["笑顔","得意げな表情"],"小悪魔":["微笑み","得意げな表情"],"お嬢様":["微笑み","自信げな表情"],"ギャル":["笑顔","得意げな表情"],"清楚":["微笑み","優しい表情"],"不思議ちゃん":["微笑み","驚いた顔"],"無口":["真顔","少し寂しげな表情"],"ミステリアス":["真顔","少し寂しげな表情"],"真面目":["真剣な表情","真顔"],"マイペース":["微笑み","眠そうな顔"],"甘えん坊":["笑顔","照れ顔"],"勝ち気":["得意げな表情","笑顔"],"内気":["照れ顔","困り顔"],"儚げ":["少し寂しげな表情","微笑み"],"知的":["真剣な表情","微笑み"],"活発":["笑顔","得意げな表情"],"強気":["得意げな表情","真剣な表情"],"熱血":["笑顔","真剣な表情"],"冷静":["真顔","微笑み"],"華やか":["笑顔","得意げな表情"],"芯が強い":["真剣な表情","真顔"],"情熱的":["笑顔","真剣な表情"],"優しい":["優しい表情","微笑み"],"穏やか":["微笑み","優しい表情"],"自信家":["得意げな表情","笑顔"],"大人っぽい":["微笑み","真顔"],"親しみやすい":["笑顔","微笑み"],"好奇心旺盛":["驚いた顔","笑顔"]};
+const CATS={"キャラクター":["性別","年齢","性格","髪型","髪色","瞳の色","職業"],"スタイル":["衣装","衣装系統","アクセサリー","小物","持ち物"],"シーン":["場所","時間","季節","天候","イベント","シチュエーション","行動"],"構図":["人数","関係性","距離","アングル","向き","注目部位","ポーズ"],"雰囲気":["テーマ","感情","表情","非現実要素"]};
+const locks={}; let current={}; let custom=JSON.parse(localStorage.getItem('oekakiCustom')||'{}'); let customR=JSON.parse(localStorage.getItem('oekakiRelated')||'{}');
+const ALL=[...new Set(Object.values(CATS).flat())]; const GROUPS=Object.entries(CATS);
+function pick(a){a=(a||[]).filter(Boolean); return a.length?a[Math.floor(Math.random()*a.length)]:''}
+function uniq(a){return [...new Set(a.filter(Boolean))]}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function vals(field){let a=uniq([...(D[field]||[]),...(custom[field]||[])]); const mode=document.getElementById('mode')?.value; if(mode==='ファンタジー系'&&fantasyOnly[field]) a=fantasyOnly[field]; if(mode==='現実系'&&field==='非現実要素') return ['なし']; return a}
+const fantasyOnly={場所:D.場所.filter(x=>['魔法学校','古代遺跡','森の集落','空中都市','魔女の工房','王都','城','魔法図書館','竜の谷','妖精の森','星空の神殿','地下迷宮'].includes(x)),職業:D.職業.filter(x=>['魔法使い','錬金術師','騎士','冒険者','司祭','宮廷魔術師','妖精研究者','竜騎士','魔導具職人'].includes(x)),衣装:D.衣装.filter(x=>['ローブ','魔法学校制服','騎士装備','冒険者装備','エルフ風衣装','魔女装束','王宮衣装','錬金術師コート'].includes(x)),イベント:D.イベント||[]};
+function enabled(f){let x=document.querySelector('[data-toggle="'+CSS.escape(f)+'"]'); return !x || x.checked}
+function can(f){return !locks[f] && enabled(f)} function set(f,v){if(can(f)) current[f]=v}
+function themeTokens(){return document.getElementById('seed').value.trim().split(/[\s、,・]+/).filter(Boolean)}
+function eventFor(t){return E[t]?t:Object.keys(E).find(k=>t.includes(k)||k.includes(t))||''}
+function inferSeed(){let s=themeTokens().join(' '), out={}; for(const t of themeTokens()){const ev=eventFor(t);if(ev)out.event=ev; for(const c of ['場所','衣装','髪色','瞳の色','性格','髪型','注目部位','テーマ','季節','天候']){let hit=vals(c).find(x=>x===t||t.includes(x)||x.includes(t));if(hit)out[c]=hit} for(const [k,chs] of Object.entries(R)){if(t===k||chs.includes(t))out.related=t}} return out}
+function compatibleActions(place, distance){let a=SCENE_ACTIONS[place]||[]; if(a.length)return a; let general=vals('行動'); if(distance==='バストアップ') general=general.filter(x=>!/(走る|歩く|靴|足|しゃがむ)/.test(x)); if(distance==='遠景') general=general.filter(x=>!/(細かい|本を読む|スマホ)/.test(x)); return general}
+function actionDistance(a){if(/靴|足元|走る|歩く|全身/.test(a))return ['膝上','全身','遠景']; if(/顔|髪|飲み物|話す|本|スマホ/.test(a))return ['バストアップ','腰上','膝上']; return vals('距離')}
+function focusDirections(f){if(/背中/.test(f))return ['斜め後ろ','後ろ姿']; if(/胸|胸元/.test(f))return ['正面','斜め前','横']; if(/顔|目|髪/.test(f))return ['正面','斜め前','横']; if(/足|脚/.test(f))return ['斜め前','横','正面']; return vals('向き')}
+function colorPersonality(){let a=[]; if(current.髪色)a.push(...(HAIRLINK[current.髪色]||[])); let eye=current.瞳の色||''; let e=Object.keys(EYELINK).find(k=>eye===k||eye.includes(k)); if(e)a.push(...EYELINK[e]); let key=(current.髪色||'')+'|'+e; if(COMBO[key])a.push(...COMBO[key]); return uniq(a)}
+function generateAll(){let seed=inferSeed(); const ev=seed.event||eventFor(seed.イベント||''); if(ev) seed.event=ev; let axis=document.getElementById('axis').value;
+ // 1)主軸を最優先。ただしロック・OFFは常に勝つ
+ if(axis==='テーマ'&&themeTokens()[0])seed.テーマ=themeTokens()[0]; if(axis==='イベント'&&ev)seed.event=ev; if(axis==='場所'&&seed.場所){} if(axis==='髪色'&&seed['髪色']){} if(axis==='瞳の色'&&seed['瞳の色']){}
+ const prev={...current}; current={};
+ for(const k in locks) if(locks[k] && prev[k]!==undefined) current[k]=prev[k];
+ // anchor
+ for(const f of ALL) if(seed[f]!==undefined) set(f,seed[f]);
+ const eventName=seed.event||seed['イベント']; if(eventName){set('イベント',eventName); let d=E[eventName]; set('季節',d.season); set('衣装',pick(d.outfits)); set('小物',pick(d.props)); set('行動',pick(d.actions)); set('テーマ',eventName)}
+ const fantasyMode=document.getElementById('mode').value==='ファンタジー系';
+ set('性別',pick(vals('性別'))); set('年齢',pick(vals('年齢'))); set('髪型',pick(vals('髪型'))); set('髪色',current.髪色||pick(HAIR)); set('瞳の色',current.瞳の色||pick(EYES));
+ let cp=colorPersonality(); set('性格',current.性格||pick(cp.length?cp:vals('性格'))); set('職業',pick(vals('職業')));
+ if(!current.人数)set('人数',pick(vals('人数'))); set('関係性',current.人数==='1人'?'一人':pick(vals('関係性')));
+ if(!current.場所)set('場所',pick(vals('場所'))); if(current.場所==='古い神社'&&!current.衣装)set('衣装',pick(['和装','巫女装束','浴衣']));
+ set('時間',pick(vals('時間'))); if(!current.季節)set('季節',pick(vals('季節'))); set('天候',pick(vals('天候'))); if(!current.イベント)set('イベント',pick(Object.keys(E))); if(!current.シチュエーション)set('シチュエーション',pick(vals('シチュエーション')));
+ if(!current.行動){let a=compatibleActions(current.場所,current.距離);set('行動',pick(a))} else if(!locks['行動']&&enabled('行動')) current.行動=current.行動;
+ set('衣装系統',pick(vals('衣装系統'))); if(!current.衣装)set('衣装',pick(vals('衣装'))); set('アクセサリー',pick(vals('アクセサリー'))); if(!current.小物)set('小物',pick(vals('小物'))); set('持ち物',pick(vals('持ち物')));
+ if(!current.距離){let ds=current.行動?actionDistance(current.行動):vals('距離');set('距離',pick(ds))} if(!current.アングル)set('アングル',pick(vals('アングル'))); if(!current.向き)set('向き',pick(focusDirections(current.注目部位)));
+ set('注目部位',current.注目部位||pick(vals('注目部位'))); if(!locks.向き&&enabled('向き'))current.向き=pick(focusDirections(current.注目部位));
+ if(!locks.距離&&enabled('距離')){let ds=current.行動?actionDistance(current.行動):vals('距離'); current.距離=pick(ds)}
+ if(!current.ポーズ)set('ポーズ',pick(vals('ポーズ'))); if(!current.テーマ)set('テーマ',pick(vals('テーマ'))); set('感情',pick(vals('感情'))); set('表情',pick(EXPR[current.性格]||vals('表情'))); set('非現実要素',fantasyMode?pick(vals('非現実要素')):(document.getElementById('mode').value==='現実系'?'なし':pick(vals('非現実要素'))));
+ if(document.getElementById('axis').value==='人物'&&!locks['性格'])current.性格=pick(colorPersonality().length?colorPersonality():vals('性格'));
+ if(document.getElementById('axis').value==='性格'&&can('性格')){current.性格=seed.性格||pick(vals('性格')); if(can('表情'))current.表情=pick(EXPR[current.性格]||vals('表情'))}
+ if(document.getElementById('axis').value==='髪型'&&can('髪型'))current.髪型=seed.髪型||pick(vals('髪型'));
+ if(document.getElementById('axis').value==='髪色'&&can('髪色'))current.髪色=seed.髪色||pick(HAIR);
+ if(document.getElementById('axis').value==='瞳の色'&&can('瞳の色'))current.瞳の色=seed['瞳の色']||pick(EYES);
+ if(can('性格')&&axis!=='性格'){let p=colorPersonality(); if(p.length)current.性格=pick(p)}
+ // coherence: locked distance/action gets priority
+ if(locks.距離&&!locks.行動&&enabled('行動')){let a=compatibleActions(current.場所,current.距離);current.行動=pick(a)}
+ if(locks.行動&&!locks.距離&&enabled('距離'))current.距離=pick(actionDistance(current.行動));
+ if(locks.注目部位&&!locks.向き&&enabled('向き'))current.向き=pick(focusDirections(current.注目部位));
+ if(!locks.ポーズ&&enabled('ポーズ')){if(/手|顔|髪|本|スマホ/.test(current.行動||''))current.ポーズ=pick(['本を持つ','スマホを見る','髪を触る','頬に手を当てる','軽く身を乗り出す']); else current.ポーズ=pick(vals('ポーズ'))}
+ render(); status('全体生成しました。主軸：'+axis)}
+function regenGroup(group){const fields=CATS[group]; for(const f of fields){if(can(f)){if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='距離')current[f]=pick(current.行動?actionDistance(current.行動):vals(f)); else current[f]=pick(vals(f))}} if(group==='シーン'&&current.イベント&&E[current.イベント]){let d=E[current.イベント];if(can('季節'))current.季節=d.season;if(can('衣装'))current.衣装=pick(d.outfits);if(can('小物'))current.小物=pick(d.props);if(can('行動'))current.行動=pick(d.actions)} if(group==='キャラクター'&&can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格')); render();status(group+'を再生成しました。ロックは維持しています。')}
+function regenItem(f){if(!can(f))return; if(f==='性格')current[f]=pick(colorPersonality().length?colorPersonality():vals(f)); else if(f==='表情')current[f]=pick(EXPR[current.性格]||vals(f)); else if(f==='行動')current[f]=pick(compatibleActions(current.場所,current.距離)); else if(f==='距離')current[f]=pick(actionDistance(current.行動)); else if(f==='向き')current[f]=pick(focusDirections(current.注目部位)); else if(f==='衣装'&&current.イベント&&E[current.イベント])current[f]=pick(E[current.イベント].outfits); else current[f]=pick(f==='髪色'?HAIR:f==='瞳の色'?EYES:vals(f)); if(f==='髪色'||f==='瞳の色'){if(can('性格'))current.性格=pick(colorPersonality().length?colorPersonality():vals('性格'));if(can('表情'))current.表情=pick(EXPR[current.性格]||vals('表情'))} render();status(f+'を再生成しました。')}
+function render(){const root=document.getElementById('results');root.innerHTML='';for(const [group,fields] of GROUPS){let d=document.createElement('details');d.className='group';d.open=false;let sum=document.createElement('summary');sum.innerHTML='<span>'+group+'</span><span class="group-tools"><button class="iconbtn" onclick="event.preventDefault();regenGroup('+JSON.stringify(group)+')">🔄</button><span>⌄</span></span>';d.appendChild(sum);let body=document.createElement('div');body.className='group-body';for(const f of fields){let row=document.createElement('div');row.className='row '+(!enabled(f)?'off':'');let lk=!!locks[f];row.innerHTML='<div class="field">'+esc(f)+'</div><div class="value">'+esc(current[f]||'—')+'</div><button class="iconbtn '+(lk?'locked':'')+'" onclick="toggleLock('+JSON.stringify(f)+')">'+(lk?'🔒':'🔓')+'</button><button class="iconbtn" onclick="regenItem('+JSON.stringify(f)+')">🔄</button>';body.appendChild(row)}d.appendChild(body);root.appendChild(d)}}
+function toggleLock(f){locks[f]=!locks[f];render();saveSettings();status((locks[f]?'🔒 ロック：':'🔓 解除：')+f)}function clearLocks(){for(const k in locks)delete locks[k];render();status('すべてのロックを解除しました')}
+function status(s){document.getElementById('status').textContent=s}
+function copyResult(){let t=GROUPS.map(([g,fs])=>g+'\n'+fs.map(f=>f+'：'+(current[f]||'')).join('\n')).join('\n\n');navigator.clipboard?.writeText(t);status('生成結果をコピーしました')}
+function twist(){let f=pick(['小物','持ち物','非現実要素','アクセサリー','天候']);if(can(f))current[f]=pick(vals(f));render();status('💡 '+f+'にもう一捻り入れました')}
+function mixOne(){let f=pick(['場所','衣装','小物','非現実要素','行動']);if(can(f))current[f]=pick(vals(f));render();status('🌀 '+f+'に異物を1個混ぜました')}
+function beforeAfter(){if(can('シチュエーション'))current.シチュエーション=(current.シチュエーション||'')+' → その後の余韻を想像する';render();status('📖 前後の流れを考えやすい形にしました')}
+function searchRelated(term){term=(term||document.getElementById('relInput').value).trim();let arr=uniq([...(R[term]||[]),...(customR[term]||[])]);let box=document.getElementById('relatedResults');box.innerHTML=arr.length?arr.map(x=>'<button class="chip" onclick="searchRelated('+JSON.stringify(x)+')">'+esc(x)+'</button>').join(''):'<span class="hint">関連ワードが見つかりませんでした。</span>';if(term)document.getElementById('relInput').value=term}
+function addCustomRelated(){let parent=document.getElementById('relInput').value.trim(),word=document.getElementById('customWord').value.trim();if(!parent||!word)return status('親ワードと追加語を入力してください');customR[parent]=uniq([...(customR[parent]||[]),word]);localStorage.setItem('oekakiRelated',JSON.stringify(customR));searchRelated(parent);status('関連ワードを登録しました')}
+function addCustomData(){let f=document.getElementById('customCat').value,w=document.getElementById('customData').value.trim();if(!w)return;custom[f]=uniq([...(custom[f]||[]),w]);localStorage.setItem('oekakiCustom',JSON.stringify(custom));document.getElementById('customData').value='';showCustom();status(f+'に「'+w+'」を登録しました')}
+function showCustom(){let box=document.getElementById('customList');let a=[];for(const [k,v] of Object.entries(custom))for(const x of v)a.push('<span class="chip">'+esc(k)+'：'+esc(x)+'</span>');box.innerHTML=a.length?a.join(''):'<span class="hint">まだ登録はありません。</span>'}
+function initToggles(){const box=document.getElementById('toggles');box.innerHTML=ALL.map(f=>'<label class="check"><input type="checkbox" data-toggle="'+esc(f)+'" checked onchange="saveSettings()">'+esc(f)+'</label>').join('');let s=JSON.parse(localStorage.getItem('oekakiSettings')||'{}');document.querySelectorAll('[data-toggle]').forEach(x=>{if(s[x.dataset.toggle]===false)x.checked=false})}
+function saveSettings(){let s={};document.querySelectorAll('[data-toggle]').forEach(x=>s[x.dataset.toggle]=x.checked);localStorage.setItem('oekakiSettings',JSON.stringify(s))}
+initToggles();showCustom();generateAll();
+</script></body></html>
