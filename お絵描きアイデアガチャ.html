@@ -74,26 +74,30 @@ function makeIdea(){
 function generate(){
  current=makeIdea(); render();
 }
+const resultEl=document.getElementById("result");
+const statusEl=document.getElementById("status");
+const savedListEl=document.getElementById("savedList");
+
 function render(){
- result.innerHTML=keys.map(k=>`<div class="card"><div class="row"><div class="icon">${icons[k]}</div><div><div class="label">${k}</div><div class="value">${current[k]}</div></div></div></div>`).join("");
- status.textContent="";
+ resultEl.innerHTML=keys.map(k=>`<div class="card"><div class="row"><div class="icon">${icons[k]}</div><div><div class="label">${k}</div><div class="value">${current[k]}</div></div></div></div>`).join("");
+ statusEl.textContent="";
 }
 function text(){
  return keys.map(k=>`${icons[k]} ${k}：${current[k]}`).join("\n");
 }
 function copyIdea(){
  if(!current)return;
- navigator.clipboard?.writeText(text()).then(()=>status.textContent="コピーしました！").catch(()=>status.textContent="コピーに失敗しました。");
+ navigator.clipboard?.writeText(text()).then(()=>statusEl.textContent="コピーしました！").catch(()=>statusEl.textContent="コピーに失敗しました。");
 }
 function saveIdea(){
  if(!current)return;
  const arr=JSON.parse(localStorage.getItem("drawingIdeas")||"[]");
  arr.unshift(current); localStorage.setItem("drawingIdeas",JSON.stringify(arr.slice(0,20)));
- renderSaved(); status.textContent="保存しました！";
+ renderSaved(); statusEl.textContent="保存しました！";
 }
 function renderSaved(){
  const arr=JSON.parse(localStorage.getItem("drawingIdeas")||"[]");
- savedList.innerHTML=arr.length?arr.map((x,i)=>`<div class="card"><div class="value">${x.場所}・${x.季節}・${x.時間}</div><div class="small">${x.衣装}／${x.シチュエーション}／${x.構図}</div></div>`).join(""):"まだありません。";
+ savedListEl.innerHTML=arr.length?arr.map((x,i)=>`<div class="card"><div class="value">${x.場所}・${x.季節}・${x.時間}</div><div class="small">${x.衣装}／${x.シチュエーション}／${x.構図}</div></div>`).join(""):"まだありません。";
 }
 generate(); renderSaved();
 </script>
