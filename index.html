@@ -114,6 +114,7 @@ const fields={character:['性格','髪型','髪色','瞳の色','職業'],style:
 const labels={character:'character',style:'style',scene:'scene',composition:'composition',mood:'mood'};
 const defaultEnabled={}; Object.values(fields).flat().forEach(k=>defaultEnabled[k]=true); Object.assign(state.enabled,defaultEnabled);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
+const pickDifferent=(a,current)=>{const pool=uniq((a||[]).filter(x=>x!==current));return pick(pool.length?pool:(a||[]));};
 const uniq=a=>[...new Set((a||[]).filter(Boolean))];
 function candidates(key){let a=[]; if(key==='場所') a=dictionarySceneEntries().map(x=>x[0]); else if(key==='時間')a=TIMES; else if(key==='季節')a=SEASONS; else if(key==='衣装')a=(state.world==='fantasy'?FANTASY.衣装:D.衣装); else if(key==='性格')a=PERSONALITIES; else if(key==='髪型')a=HAIR; else if(key==='表情')a=['笑顔','穏やかな笑顔','照れた笑顔','真剣な表情','驚いた表情','少し寂しげ','楽しそう','悪戯っぽい笑顔']; else if(key==='シチュエーション')a=uniq([...(state.world==='fantasy'?FANTASY.シチュエーション:D.シチュエーション),...dictionarySceneKeys()]); else if(key==='距離')a=DIST; else if(key==='アングル')a=ANGLES; else if(key==='向き')a=DIRECTIONS; else if(key==='天候')a=WEATHER; else if(key==='行動')a=allActions(); else if(key==='小物')a=(state.world==='fantasy'?FANTASY.小物:[]); else if(key==='非現実要素')a=(state.world==='fantasy'?FANTASY.非現実要素:['なし']); else if(key==='イベント')a=uniq([...EVENTS,...dictionarySceneKeys().filter(x=>/イベント|祭り|誕生日|バレンタイン|卒業|クリスマス|お泊まり|夏休み|放課後|競技|舞踏会/.test(x))]); else if(key==='テーマ')a=uniq(['青春','日常','夏','雨の日','クリスマス','旅','放課後','静かな時間','冒険','魔法',...dictionarySceneKeys(),...Object.keys(REL_CATEGORIES)]); else if(key==='感情')a=FEELINGS; else if(key==='衣装系統')a=CLOTH_TYPES; else if(key==='アクセサリー')a=ACCESS; else if(key==='髪色')a=HAIR_COLORS; else if(key==='瞳の色')a=EYES; else if(key==='職業')a=uniq([...JOBS,...['冒険者','騎士','戦士','魔法使い','魔女','錬金術師','薬師','商人','王族','貴族','先生','生徒','執事','メイド','アイドル','海賊']]); else if(key==='人数')a=['1人','2人','3人','4人以上']; else if(key==='関係性')a=['一人','友人','親友','幼なじみ','先輩・後輩','姉妹・兄弟','家族','恋人','ライバル','主従関係','先生・生徒','仲間']; else if(key==='注目部位')a=['なし',...Object.keys(BODY_DATA)]; else if(key==='ポーズ')a=BODY_DATA['姿勢']||[]; return uniq(a);}
 function placeInfo(name){return dictionarySceneEntries().find(x=>x[0]===name)||null}
@@ -123,8 +124,9 @@ function colorPersonality(h,e){return uniq([...(HAIR_COLOR_PERSONALITY[h]||[]),.
 function generateAll(){
  let eventAxis=(state.axis==='イベント'&&state.axisValue&&state.axisValue!=='おまかせ')?state.axisValue:(state.enabled.イベント&&!state.locked.イベント?pick(EVENTS):state.out.イベント);
  let ec=EVENT_CONTEXT[eventAxis];
- let place=(state.enabled.場所&&!state.locked.場所)?pick(ec?.場所||candidates('場所')):state.out.場所;
- place=place||pick(candidates('場所'));
+ let placeCandidates=ec?.場所||candidates('場所');
+ let place=(state.enabled.場所&&!state.locked.場所)?pickDifferent(placeCandidates,state.out.場所):state.out.場所;
+ place=place||pick(placeCandidates);
  let pi=placeInfo(place);
  let season=(state.enabled.季節&&!state.locked.季節)?pick(ec?.季節||pi?.[1]||SEASONS):state.out.季節;
  let time=(state.enabled.時間&&!state.locked.時間)?pick(ec?.時間||pi?.[2]||TIMES):state.out.時間;
