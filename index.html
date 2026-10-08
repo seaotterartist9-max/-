@@ -96,11 +96,24 @@ function addWord(){let w=document.getElementById('newWord').value.trim();let cat
 function statusMsg(x){document.getElementById('status').textContent=x;setTimeout(()=>document.getElementById('status').textContent='',1800)}
 function twist(){let extras=['風で髪や服が少し揺れる','足元に小さな落とし物','遠くに誰かの姿','突然スマホに通知が届く','季節外れの小物が一つ'];state.out['もう一捻り']=pick(extras);renderAll();statusMsg('もう一捻りを追加！')}
 function story(){state.out['前後']=pick(['この直前に何があった？','このあと誰とどこへ行く？','数分前には何をしていた？','帰り道に起こることを考える']);renderAll();statusMsg(state.out['前後'])}
-// 初期UIはHTMLに存在。JSが失敗しても5カテゴリ自体は消えない。
-state.axisTab='world';renderAxis();
-document.querySelectorAll('[data-axis-tab]').forEach(b=>b.onclick=()=>{state.axisTab=b.dataset.axisTab;document.querySelectorAll('[data-axis-tab]').forEach(x=>x.classList.toggle('active',x===b));renderAxis()});
-document.querySelectorAll('.category').forEach(c=>{let key=c.dataset.cat;c.querySelector('.catHead').onclick=e=>{if(e.target.closest('.regen'))return;state.open[key]=!state.open[key];c.classList.toggle('open',state.open[key]);c.querySelector('.chev').textContent=state.open[key]?'⌃':'⌄'};c.querySelector('.regen').onclick=e=>{e.stopPropagation();regen(key)}});
-document.getElementById('generate').onclick=()=>{let axisVal=document.getElementById('axisValue')?.value;if(state.axis!=='おまかせ'&&axisVal&&axisVal!=='おまかせ')state.out[state.axis]=axisVal;generateAll();statusMsg('生成しました！')};
-document.getElementById('relSearch').onclick=relatedSearch;document.getElementById('addWord').onclick=addWord;document.getElementById('twist').onclick=twist;document.getElementById('story').onclick=story;
-for(const c of Object.keys(fields))renderItems(c);const nc=document.getElementById('newCat');nc.innerHTML=Object.keys(fields).flatMap(c=>fields[c]).map(x=>`<option>${x}</option>`).join('');renderAll();
+// 安定版初期化
+function safe(fn){try{fn()}catch(e){console.error(e)}}
+state.axisTab='world';
+safe(()=>{
+  renderAxis();
+  document.querySelectorAll('[data-axis-tab]').forEach(b=>{
+    b.onclick=()=>{state.axisTab=b.dataset.axisTab;document.querySelectorAll('[data-axis-tab]').forEach(x=>x.classList.toggle('active',x===b));safe(renderAxis)};
+  });
+});
+safe(()=>{
+  document.querySelectorAll('.category').forEach(c=>{
+    const key=c.dataset.cat, head=c.querySelector('.catHead'), regenBtn=c.querySelector('.regen');
+    if(head) head.onclick=e=>{if(e.target.closest('.regen'))return;state.open[key]=!state.open[key];c.classList.toggle('open',state.open[key]);const q=c.querySelector('.chev');if(q)q.textContent=state.open[key]?'⌃':'⌄'};
+    if(regenBtn) regenBtn.onclick=e=>{e.stopPropagation();safe(()=>regen(key))};
+  });
+});
+safe(()=>{const g=document.getElementById('generate');if(g)g.onclick=()=>safe(()=>{const v=document.getElementById('axisValue')?.value;if(state.axis!=='おまかせ'&&v&&v!=='おまかせ')state.out[state.axis]=v;generateAll();statusMsg('生成しました！')})});
+safe(()=>{const a=document.getElementById('relSearch'),b=document.getElementById('addWord'),c=document.getElementById('twist'),d=document.getElementById('story');if(a)a.onclick=()=>safe(relatedSearch);if(b)b.onclick=()=>safe(addWord);if(c)c.onclick=()=>safe(twist);if(d)d.onclick=()=>safe(story)});
+safe(()=>{const n=document.getElementById('newCat');if(n)n.innerHTML=uniq(Object.values(fields).flat()).map(x=>`<option>${x}</option>`).join('')});
+safe(()=>{Object.keys(fields).forEach(c=>renderItems(c));renderAll()});
 </script></body></html>
