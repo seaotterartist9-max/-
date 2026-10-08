@@ -60,6 +60,42 @@ const TIMES=['朝','昼','放課後','夕方','夜','深夜'];
 const DIST=['遠い','近い','隣','目の前'];
 const ANGLES=['煽り','俯瞰'];
 const DIRECTIONS=['正面','斜め前','横','斜め後ろ','後ろ姿'];
+
+const STYLE_GROUPS={
+"私服":{
+"清楚系":["ワンピース","ブラウス＋スカート","カーディガン＋スカート","ロングスカート＋ブラウス"],
+"カジュアル系":["パーカー＋スカート","Tシャツ＋デニム","パーカー＋パンツ","ニット＋スカート"],
+"ガーリー系":["フリルブラウス＋スカート","リボン付きワンピース","プリーツスカート＋ブラウス"],
+"大人っぽい系":["ジャケット＋スカート","ブラウス＋ロングスカート","きれいめワンピース"],
+"スポーティー系":["ジャージ","スウェット","スポーツウェア"]},
+"コスプレ":{
+"ナース":["ナース服","ナース服＋ナースキャップ"],
+"メイド":["メイド服","クラシックメイド服","エプロンドレス"],
+"巫女":["巫女装束","巫女装束＋袴"],
+"魔法使い":["魔法使い衣装","ローブ","魔法使いローブ＋魔法帽"],
+"アイドル":["アイドル衣装","ステージ衣装","アイドル風ドレス"],
+"サンタ":["サンタ衣装","サンタワンピース","サンタ衣装＋サンタ帽"],
+"学生風":["制服風衣装","ブレザー風衣装","セーラー服風衣装"],
+"チャイナ":["チャイナ服","チャイナドレス"],
+"ゴシック":["ゴシック衣装","ゴシックロリータ"],
+"ロリータ":["ロリータ服","甘ロリ衣装"]},
+"制服系":{"ブレザー":["ブレザー制服","ブレザー＋カーディガン"],"セーラー":["セーラー服","セーラー服＋カーディガン"]},
+"和風":{"着物":["着物","振袖"],"浴衣":["浴衣","浴衣＋帯"],"巫女":["巫女装束","巫女装束＋袴"]},
+"フォーマル":{"ドレス":["ドレス","ロングドレス","パーティードレス"],"きれいめ":["フォーマルワンピース","ジャケット＋スカート"]},
+"スポーツ":{"運動着":["スポーツウェア","ジャージ","ユニフォーム"],"水着":["水着","競泳水着"]}};
+const STYLE_CATEGORIES=Object.keys(STYLE_GROUPS);
+function chooseStyle(group){
+ const g=STYLE_GROUPS[group]||STYLE_GROUPS[pick(STYLE_CATEGORIES)];
+ const type=pick(Object.keys(g));
+ return {group:Object.keys(STYLE_GROUPS).find(k=>STYLE_GROUPS[k]===g)||group,type,outfit:pick(g[type])};
+}
+function styleFromContext(o){
+ const event=o.イベント||'',place=o.場所||'';
+ if(/クリスマス|クリスマスパーティー/.test(event))return chooseStyle("コスプレ");
+ if(/神社|寺|温泉|旅館|祭り|縁日/.test(place+event))return chooseStyle("和風");
+ if(/学校|教室|屋上|校庭|放課後|学生/.test(place+event))return chooseStyle("制服系");
+ return chooseStyle();
+}
 const CLOTH_TYPES=['カジュアル','制服系','きれいめ','和風','フォーマル','スポーツ','ゴシック','ロリータ','アイドル系','コスプレ'];
 const ACCESS=['リボン','ネックレス','イヤリング','ピアス','ヘアピン','カチューシャ','腕時計','ブレスレット','帽子','眼鏡','マフラー','手袋','髪飾り','ブローチ','チョーカー'];
 const EVENTS=['夏祭り','花火大会','文化祭','体育祭','ハロウィン','クリスマス','お正月','バレンタイン','七夕','花見','紅葉','イルミネーション','大晦日','誕生日','卒業・入学','海開き','お祭り・パレード'];
@@ -83,12 +119,12 @@ const EVENT_CONTEXT={
 'お祭り・パレード':{場所:['商店街','夜の街','公園'],季節:['春','夏','秋'],時間:['夕方','夜'],衣装:['私服','浴衣'],行動:['パレードを見る','友人と歩く','写真を撮る']}
 };
 const state={world:'random',axis:'場所',axisValue:'おまかせ',enabled:{},locked:{},out:{},open:{character:true,style:false,scene:false,composition:false,mood:false}};
-const fields={character:['性格','髪型','髪色','瞳の色','職業'],style:['衣装','衣装系統','アクセサリー'],scene:['場所','時間','季節','天候','シチュエーション','行動','イベント'],composition:['距離','アングル','向き','注目部位','ポーズ'],mood:['表情','テーマ','感情']};
+const fields={character:['性格','髪型','髪色','瞳の色','職業'],style:['衣装系統','衣装系統詳細','衣装','アクセサリー'],scene:['場所','時間','季節','天候','シチュエーション','行動','イベント'],composition:['距離','アングル','向き','注目部位','ポーズ'],mood:['表情','テーマ','感情']};
 const labels={character:'character',style:'style',scene:'scene',composition:'composition',mood:'mood'};
 const defaultEnabled={}; Object.values(fields).flat().forEach(k=>defaultEnabled[k]=true); Object.assign(state.enabled,defaultEnabled);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const uniq=a=>[...new Set((a||[]).filter(Boolean))];
-function candidates(key){let a=[]; if(key==='場所') a=(state.world==='fantasy'?FANTASY.場所:D.場所).map(x=>x[0]); else if(key==='時間')a=TIMES; else if(key==='季節')a=SEASONS; else if(key==='衣装')a=(state.world==='fantasy'?FANTASY.衣装:D.衣装); else if(key==='性格')a=PERSONALITIES; else if(key==='髪型')a=HAIR; else if(key==='表情')a=['笑顔','穏やかな笑顔','照れた笑顔','真剣な表情','驚いた表情','少し寂しげ','楽しそう','悪戯っぽい笑顔']; else if(key==='シチュエーション')a=(state.world==='fantasy'?FANTASY.シチュエーション:D.シチュエーション); else if(key==='距離')a=DIST; else if(key==='アングル')a=ANGLES; else if(key==='向き')a=DIRECTIONS; else if(key==='天候')a=WEATHER; else if(key==='行動')a=[]; else if(key==='小物')a=(state.world==='fantasy'?FANTASY.小物:[]); else if(key==='非現実要素')a=(state.world==='fantasy'?FANTASY.非現実要素:['なし']); else if(key==='イベント')a=EVENTS; else if(key==='テーマ')a=['青春','日常','夏','雨の日','クリスマス','旅','放課後','静かな時間','冒険','魔法']; else if(key==='感情')a=FEELINGS; else if(key==='衣装系統')a=CLOTH_TYPES; else if(key==='アクセサリー')a=ACCESS; else if(key==='髪色')a=HAIR_COLORS; else if(key==='瞳の色')a=EYES; else if(key==='職業')a=JOBS; else if(key==='人数')a=['1人','2人','3人','4人以上']; else if(key==='関係性')a=['一人','友人','親友','幼なじみ','先輩・後輩','姉妹・兄弟','家族','恋人','ライバル','主従関係','先生・生徒','仲間']; else if(key==='注目部位')a=['なし',...Object.keys(BODY_DATA)]; else if(key==='ポーズ')a=BODY_DATA['姿勢']||[]; return uniq(a);}
+function candidates(key){let a=[]; if(key==='場所') a=(state.world==='fantasy'?FANTASY.場所:D.場所).map(x=>x[0]); else if(key==='時間')a=TIMES; else if(key==='季節')a=SEASONS; else if(key==='衣装')a=(state.world==='fantasy'?FANTASY.衣装:D.衣装); else if(key==='性格')a=PERSONALITIES; else if(key==='髪型')a=HAIR; else if(key==='表情')a=['笑顔','穏やかな笑顔','照れた笑顔','真剣な表情','驚いた表情','少し寂しげ','楽しそう','悪戯っぽい笑顔']; else if(key==='シチュエーション')a=(state.world==='fantasy'?FANTASY.シチュエーション:D.シチュエーション); else if(key==='距離')a=DIST; else if(key==='アングル')a=ANGLES; else if(key==='向き')a=DIRECTIONS; else if(key==='天候')a=WEATHER; else if(key==='行動')a=[]; else if(key==='小物')a=(state.world==='fantasy'?FANTASY.小物:[]); else if(key==='非現実要素')a=(state.world==='fantasy'?FANTASY.非現実要素:['なし']); else if(key==='イベント')a=EVENTS; else if(key==='テーマ')a=['青春','日常','夏','雨の日','クリスマス','旅','放課後','静かな時間','冒険','魔法']; else if(key==='感情')a=FEELINGS; else if(key==='衣装系統')a=STYLE_CATEGORIES; else if(key==='アクセサリー')a=ACCESS; else if(key==='髪色')a=HAIR_COLORS; else if(key==='瞳の色')a=EYES; else if(key==='職業')a=JOBS; else if(key==='人数')a=['1人','2人','3人','4人以上']; else if(key==='関係性')a=['一人','友人','親友','幼なじみ','先輩・後輩','姉妹・兄弟','家族','恋人','ライバル','主従関係','先生・生徒','仲間']; else if(key==='注目部位')a=['なし',...Object.keys(BODY_DATA)]; else if(key==='ポーズ')a=BODY_DATA['姿勢']||[]; return uniq(a);}
 function placeInfo(name){let list=state.world==='fantasy'?FANTASY.場所:D.場所;return list.find(x=>x[0]===name)||null}
 function actionsFor(place){let x=placeInfo(place);return x?x[4]||[]:[]}
 function derivePose(o){let focus=o['注目部位']; let base=[]; if(focus&&BODY_DATA[focus])base=BODY_DATA[focus]; let action=o['行動']; let p=action&&/歩|走/.test(action)?['歩く','立つ','片足立ち','振り返る']:action&&/座|休憩|読書/.test(action)?['座る','寄りかかる','前屈み','寝転ぶ']:['立つ','座る','振り返る','前屈み','体をひねる']; return uniq([...base,...p]).slice(0,18);}
@@ -102,7 +138,7 @@ function generateAll(){
  let pi=placeInfo(place);
  let season=(ec&&state.axis==='イベント'&&!state.locked.季節)?pick(ec.季節):(state.out.季節||pick(pi?.[1]||SEASONS));
  let time=(ec&&state.axis==='イベント'&&!state.locked.時間)?pick(ec.時間):(state.out.時間||pick(pi?.[2]||TIMES));
- let outfit=(ec&&state.axis==='イベント'&&!state.locked.衣装)?pick(ec.衣装):(state.out.衣装||pick(pi?.[3]||candidates('衣装')));
+ let stylePick=styleFromContext(state.out); let outfit=(ec&&state.axis==='イベント'&&!state.locked.衣装)?pick(ec.衣装):(state.out.衣装||stylePick.outfit||pick(pi?.[3]||candidates('衣装')));
  let action=(ec&&state.axis==='イベント'&&!state.locked.行動)?pick(ec.行動):(state.out.行動||pick(actionsFor(place)));
  let hair=state.out.髪色||pick(HAIR_COLORS); let eye=state.out.瞳の色||pick(EYES); let pers=colorPersonality(hair,eye); let o={};
  for(const [cat,ks] of Object.entries(fields)){for(const k of ks){if(!state.enabled[k]||state.locked[k]){if(state.out[k]!=null)o[k]=state.out[k];continue} o[k]=pick(candidates(k));}}
@@ -119,7 +155,7 @@ function generateAll(){
  if(state.enabled.向き&&!state.locked.向き)o.向き=o['注目部位']==='背中・腰'?'後ろ姿':pick(DIRECTIONS);
  if(state.enabled.アングル&&!state.locked.アングル)o.アングル=pick(ANGLES);
  if(state.enabled.距離&&!state.locked.距離)o.距離=pick(DIST);
- if(state.enabled.衣装系統&&!state.locked.衣装系統)o.衣装系統=pick(CLOTH_TYPES);
+ if(state.enabled.衣装系統&&!state.locked.衣装系統)o.衣装系統=stylePick.group; o.衣装系統詳細=stylePick.type;
  if(state.enabled.アクセサリー&&!state.locked.アクセサリー)o.アクセサリー=pick(ACCESS);
  if(state.enabled.天候&&!state.locked.天候)o.天候=pick(WEATHER);
  if(state.enabled.イベント&&!state.locked.イベント)o.イベント=eventAxis||pick(EVENTS);
@@ -130,8 +166,28 @@ function generateAll(){
 }
 function renderAxis(){const p=document.getElementById('axisPanel'); if(state.axisTab==='detail'){p.innerHTML='<div class="sectionTitle">詳細キーワード</div><input class="input" id="axisDetail" placeholder="例：神社・寺、クリスマス、胸元"><div class="small" style="margin-top:6px">入力した言葉を主軸候補として扱います。</div>';return} if(state.axisTab==='main'){p.innerHTML='<div class="panelGrid"><div class="row"><span class="label">大枠</span><select id="axisSelect">'+['おまかせ','場所','シチュエーション','行動','注目部位','衣装','人物','イベント','テーマ','性格','髪型','髪色','瞳の色'].map(x=>'<option>'+x+'</option>').join('')+'</select></div><div class="row"><span class="label">詳細</span><select id="axisValue"><option>おまかせ</option></select></div></div>'; const s=document.getElementById('axisSelect');s.value=state.axis;s.onchange=()=>{state.axis=s.value;updateAxisValues()};updateAxisValues();return} p.innerHTML='<div class="seg"><button data-world="real">🏙️ 現実系</button><button data-world="fantasy">🧙 ファンタジー系</button><button data-world="random">🎲 おまかせ</button></div><div class="small" style="margin-top:7px">現実系は現実的な場所・服・イベント中心。ファンタジー系は魔法・異世界要素を使用。</div>';p.querySelectorAll('[data-world]').forEach(b=>{b.classList.toggle('active',b.dataset.world===state.world);b.onclick=()=>{state.world=b.dataset.world;renderAxis();}})}
 function updateAxisValues(){let s=document.getElementById('axisValue');if(!s)return;let vals=state.axis==='場所'?candidates('場所'):state.axis==='衣装'?candidates('衣装'):state.axis==='髪型'?HAIR:state.axis==='髪色'?HAIR_COLORS:state.axis==='瞳の色'?EYES:state.axis==='性格'?PERSONALITIES:state.axis==='イベント'?EVENTS:state.axis==='注目部位'?['なし',...Object.keys(BODY_DATA)]:state.axis==='テーマ'?candidates('テーマ'):['おまかせ'];s.innerHTML=['おまかせ',...vals].map(x=>'<option>'+x+'</option>').join('');s.value=state.axisValue;s.onchange=()=>state.axisValue=s.value}
-function renderItems(cat){let box=document.getElementById('details-'+cat);box.innerHTML='';for(const k of fields[cat]){let v=state.out[k]??'—';let row=document.createElement('div');row.className='item'+(state.enabled[k]?'':' off');let cb=document.createElement('input');cb.type='checkbox';cb.checked=!!state.enabled[k];cb.onchange=()=>{state.enabled[k]=cb.checked;row.classList.toggle('off',!cb.checked)};let val=document.createElement('select');val.className='input';val.innerHTML=uniq([v,...candidates(k)]).map(x=>'<option>'+x+'</option>').join('');val.value=v;val.onchange=()=>state.out[k]=val.value;let lk=document.createElement('button');lk.className='lock'+(state.locked[k]?' on':'');lk.textContent=state.locked[k]?'🔒':'🔓';lk.onclick=()=>{state.locked[k]=!state.locked[k];lk.textContent=state.locked[k]?'🔒':'🔓';lk.classList.toggle('on',state.locked[k])};row.append(cb,val,lk);box.appendChild(row)}}
-function renderAll(){for(const c of Object.keys(fields))renderItems(c);document.querySelectorAll('.category').forEach(c=>{c.classList.toggle('open',!!state.open[c]);c.querySelector('.chev').textContent=state.open[c]?'⌃':'⌄'});let p={character:['性格','髪型','髪色'],style:['衣装','衣装系統','アクセサリー'],scene:['場所','時間','季節'],composition:['距離','アングル','向き'],mood:['表情','感情','テーマ']};for(const c of Object.keys(p))document.getElementById('preview-'+c).textContent=p[c].map(k=>state.out[k]).filter(Boolean).join(' ・ ')||'未生成';document.querySelector('#result strong').textContent=`${state.out.場所||'場所未指定'}で、${state.out.シチュエーション||state.out.行動||'人物を描く'} — ${state.out.距離||''}・${state.out.アングル||''}・${state.out.向き||''}`;}
+function renderItems(cat){let box=document.getElementById('details-'+cat);box.innerHTML='';for(const k of fields[cat]){let v=state.out[k]??'—';let row=document.createElement('div');row.className='item'+(state.enabled[k]?'':' off');let cb=document.createElement('input');cb.type='checkbox';cb.checked=!!state.enabled[k];cb.onchange=()=>{state.enabled[k]=cb.checked;row.classList.toggle('off',!cb.checked)};let val=document.createElement('select');val.className='input';
+let opts=candidates(k);
+if(k==='衣装系統')opts=STYLE_CATEGORIES;
+if(k==='衣装系統詳細'){
+ const g=state.out.衣装系統&&STYLE_GROUPS[state.out.衣装系統];
+ opts=g?Object.keys(g):STYLE_CATEGORIES.flatMap(x=>Object.keys(STYLE_GROUPS[x]));
+}
+val.innerHTML=uniq([v,...opts]).map(x=>'<option>'+x+'</option>').join('');
+val.value=v;
+val.onchange=()=>{
+ state.out[k]=val.value;
+ if(k==='衣装系統'&&STYLE_GROUPS[val.value]){
+   const t=pick(Object.keys(STYLE_GROUPS[val.value]));
+   state.out.衣装系統詳細=t;
+   state.out.衣装=pick(STYLE_GROUPS[val.value][t]);
+   renderAll();
+ }else if(k==='衣装系統詳細'&&state.out.衣装系統&&STYLE_GROUPS[state.out.衣装系統][val.value]){
+   state.out.衣装=pick(STYLE_GROUPS[state.out.衣装系統][val.value]);
+   renderAll();
+ }
+};let lk=document.createElement('button');lk.className='lock'+(state.locked[k]?' on':'');lk.textContent=state.locked[k]?'🔒':'🔓';lk.onclick=()=>{state.locked[k]=!state.locked[k];lk.textContent=state.locked[k]?'🔒':'🔓';lk.classList.toggle('on',state.locked[k])};row.append(cb,val,lk);box.appendChild(row)}}
+function renderAll(){for(const c of Object.keys(fields))renderItems(c);document.querySelectorAll('.category').forEach(c=>{c.classList.toggle('open',!!state.open[c]);c.querySelector('.chev').textContent=state.open[c]?'⌃':'⌄'});let p={character:['性格','髪型','髪色'],style:['衣装系統','衣装系統詳細','衣装','アクセサリー'],scene:['場所','時間','季節'],composition:['距離','アングル','向き'],mood:['表情','感情','テーマ']};for(const c of Object.keys(p))document.getElementById('preview-'+c).textContent=p[c].map(k=>state.out[k]).filter(Boolean).join(' ・ ')||'未生成';document.querySelector('#result strong').textContent=`${state.out.場所||'場所未指定'}で、${state.out.シチュエーション||state.out.行動||'人物を描く'} — ${state.out.距離||''}・${state.out.アングル||''}・${state.out.向き||''}`;}
 function regen(cat){
  const wasOpen=!!state.open[cat];
  for(const k of fields[cat]){
