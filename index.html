@@ -169,24 +169,30 @@ function styleContext(){const ev=(state.axis==='イベント'&&state.axisValue&&
 function styleCandidates(){let ctx=styleContext();let groups=ctx?.group||Object.keys(STYLE_TREE);return groups.filter(g=>STYLE_TREE[g]);}
 function styleTypes(group){let ctx=styleContext();let types=Object.keys(STYLE_TREE[group]||{});if(ctx?.type?.[group])types=types.filter(t=>ctx.type[group].includes(t));return types}
 function styleOutfits(group,type){return uniq(STYLE_TREE[group]?.[type]||[])}
-function generateStyle(){
- const ctx=styleContext();
+function generateStyle(forceReroll=false){
+ const groups=styleCandidates();
  let group=state.out.衣装系統;
- if(!state.locked.衣装系統||!styleCandidates().includes(group)) group=pick(styleCandidates());
+ if(!state.locked.衣装系統 && (forceReroll || !groups.includes(group))) group=pick(groups);
+ if(!group||!STYLE_TREE[group]) group=pick(groups);
+
+ let types=styleTypes(group);
  let type=state.out._衣装タイプ;
- if(!type||!styleTypes(group).includes(type)) type=pick(styleTypes(group));
- let outfit=state.out.衣装;
+ if(!state.locked.衣装系統 && forceReroll) type=null;
+ if(!type||!types.includes(type)) type=pick(types);
+
  const allowed=styleOutfits(group,type);
- if(!state.locked.衣装||!allowed.includes(outfit)) outfit=pick(allowed);
+ let outfit=state.out.衣装;
+ if(!state.locked.衣装 && (forceReroll || !allowed.includes(outfit))) outfit=pick(allowed);
+
  if(!state.locked.衣装系統)state.out.衣装系統=group;
- if(!state.locked.衣装)state.out.衣装=outfit;
  state.out._衣装タイプ=type;
+ if(!state.locked.衣装)state.out.衣装=outfit;
  if(state.enabled.アクセサリー&&!state.locked.アクセサリー)state.out.アクセサリー=pick(ACCESS);
 }
 function regen(cat){
  const wasOpen=!!state.open[cat];
  if(cat==='style'){
-   generateStyle();
+   generateStyle(true);
    state.open[cat]=wasOpen; renderAll();
    const el=document.querySelector(`.category[data-cat="${cat}"]`); if(el)el.classList.toggle('open',wasOpen);
    return;
@@ -203,12 +209,10 @@ function regen(cat){
      if(state.enabled.場所&&!state.locked.場所)state.out.場所=pick(ec.場所);
      if(state.enabled.季節&&!state.locked.季節)state.out.季節=pick(ec.季節);
      if(state.enabled.時間&&!state.locked.時間)state.out.時間=pick(ec.時間);
-     if(state.enabled.衣装&&!state.locked.衣装)state.out.衣装=pick(ec.衣装);
      if(state.enabled.行動&&!state.locked.行動)state.out.行動=pick(ec.行動);
    } else if(pi){
      if(state.enabled.季節&&!state.locked.季節)state.out.季節=pick(pi[1]);
      if(state.enabled.時間&&!state.locked.時間)state.out.時間=pick(pi[2]);
-     if(state.enabled.衣装&&!state.locked.衣装)state.out.衣装=pick(pi[3]);
      if(state.enabled.行動&&!state.locked.行動)state.out.行動=pick(pi[4]);
    }
  }
