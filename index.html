@@ -182,7 +182,7 @@ safe(()=>{
     if(regenBtn) regenBtn.onclick=e=>{e.stopPropagation();safe(()=>regen(key))};
   });
 });
-safe(()=>{const g=document.getElementById('generate');if(g)g.onclick=()=>safe(()=>{const v=document.getElementById('axisValue')?.value;if(state.axis!=='おまかせ'&&v&&v!=='おまかせ')state.out[state.axis]=v;generateAll();statusMsg('生成しました！')})});
+safe(()=>{const g=document.getElementById('generate');if(g)g.onclick=()=>safe(()=>{const v=document.getElementById('axisValue')?.value;if(state.axis!=='おまかせ'&&v&&v!=='おまかせ')state.out[state.axis]=v;generateAll();let parent=null;if(state.axis==='イベント'&&state.axisValue!=='おまかせ')parent=state.axisValue;else if(state.axis==='場所'&&state.axisValue!=='おまかせ')parent=state.axisValue;else if(state.axis==='テーマ'&&state.axisValue!=='おまかせ')parent=state.axisValue;else if(state.axis==='シチュエーション'&&state.axisValue!=='おまかせ')parent=state.axisValue;else parent=findRelatedParent(state.out.イベント)||findRelatedParent(state.out.テーマ)||findRelatedParent(state.out.場所);applyStrongRelations(state.out,parent);renderAll();statusMsg(parent?'主軸から関連づけて生成しました！':'生成しました！')})});
 safe(()=>{const a=document.getElementById('relSearch'),b=document.getElementById('addWord'),c=document.getElementById('twist'),d=document.getElementById('story');if(a)a.onclick=()=>safe(relatedSearch);if(b)b.onclick=()=>safe(addWord);if(c)c.onclick=()=>safe(twist);if(d)d.onclick=()=>safe(story)});
 safe(()=>{const n=document.getElementById('newCat');if(n)n.innerHTML=uniq(Object.values(fields).flat()).map(x=>`<option>${x}</option>`).join('')});
 safe(()=>{Object.keys(fields).forEach(c=>renderItems(c));renderAll()});
