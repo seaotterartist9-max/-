@@ -121,16 +121,15 @@ function actionsFor(place){let x=placeInfo(place);return x?x[4]||[]:[]}
 function derivePose(o){let focus=o['注目部位']; let base=[]; if(focus&&BODY_DATA[focus])base=BODY_DATA[focus]; let action=o['行動']; let p=action&&/歩|走/.test(action)?['歩く','立つ','片足立ち','振り返る']:action&&/座|休憩|読書/.test(action)?['座る','寄りかかる','前屈み','寝転ぶ']:['立つ','座る','振り返る','前屈み','体をひねる']; return uniq([...base,...p]).slice(0,18);}
 function colorPersonality(h,e){return uniq([...(HAIR_COLOR_PERSONALITY[h]||[]),...(EYE_COLOR_PERSONALITY[e]||[]),...(COLOR_COMBO_PERSONALITY[h+'|'+e]||[])]);}
 function generateAll(){
- let eventAxis=(state.axis==='イベント'&&state.axisValue&&state.axisValue!=='おまかせ')?state.axisValue:state.out.イベント;
+ let eventAxis=(state.axis==='イベント'&&state.axisValue&&state.axisValue!=='おまかせ')?state.axisValue:(state.enabled.イベント&&!state.locked.イベント?pick(EVENTS):state.out.イベント);
  let ec=EVENT_CONTEXT[eventAxis];
- let place=state.out.場所;
- if(ec && state.axis==='イベント' && !state.locked.場所) place=pick(ec.場所);
+ let place=(state.enabled.場所&&!state.locked.場所)?pick(ec?.場所||candidates('場所')):state.out.場所;
  place=place||pick(candidates('場所'));
  let pi=placeInfo(place);
- let season=(ec&&state.axis==='イベント'&&!state.locked.季節)?pick(ec.季節):(state.out.季節||pick(pi?.[1]||SEASONS));
- let time=(ec&&state.axis==='イベント'&&!state.locked.時間)?pick(ec.時間):(state.out.時間||pick(pi?.[2]||TIMES));
- let outfit=(ec&&state.axis==='イベント'&&!state.locked.衣装)?pick(ec.衣装):(state.out.衣装||pick(pi?.[3]||candidates('衣装')));
- let action=(ec&&state.axis==='イベント'&&!state.locked.行動)?pick(ec.行動):(state.out.行動||pick(actionsFor(place)));
+ let season=(state.enabled.季節&&!state.locked.季節)?pick(ec?.季節||pi?.[1]||SEASONS):state.out.季節;
+ let time=(state.enabled.時間&&!state.locked.時間)?pick(ec?.時間||pi?.[2]||TIMES):state.out.時間;
+ let outfit=(state.enabled.衣装&&!state.locked.衣装)?pick(ec?.衣装||pi?.[3]||candidates('衣装')):state.out.衣装;
+ let action=(state.enabled.行動&&!state.locked.行動)?pick(ec?.行動||actionsFor(place)):state.out.行動;
  // Main-axis selection for situation/action: the selected value is the anchor, not just a label.
  if(state.axis==='シチュエーション' && state.axisValue && state.axisValue!=='おまかせ' && !state.locked.シチュエーション){
    const target=state.axisValue;
